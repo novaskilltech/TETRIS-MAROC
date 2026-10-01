@@ -1,0 +1,17 @@
+{
+  "name": "Tétris 3D Maroc",
+  "short_name": "Tetris Maroc",
+  "description": "Jeu de blocs arcade classique avec rendu 3D et identité marocaine.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070a0f",
+  "theme_color": "#C1272D",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
