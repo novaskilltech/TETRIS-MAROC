@@ -8,9 +8,11 @@ import { StatsPanel } from '@/components/game/StatsPanel';
 import { GameOverModal } from '@/components/game/GameOverModal';
 import { PauseModal } from '@/components/game/PauseModal';
 import { LeaderboardModal } from '@/components/leaderboard/LeaderboardModal';
+import { ThemeSelector } from '@/components/ui/ThemeSelector';
 import { soundManager } from '@/audio/soundManager';
 import { DICTIONARY, Language } from '@/lib/i18n';
-import { Play, Trophy, Volume2, VolumeX, Globe, ArrowLeft, Gamepad2, Info } from 'lucide-react';
+import { ThemeId } from '@/types/theme';
+import { Play, Trophy, Volume2, VolumeX, Globe, ArrowLeft, Gamepad2 } from 'lucide-react';
 import { Grid, ActivePiece, Position, TetrominoType } from '@/types/game';
 
 export default function TetrisMarocApp() {
@@ -18,6 +20,7 @@ export default function TetrisMarocApp() {
   const [lang, setLang] = useState<Language>('fr');
   const [isMuted, setIsMuted] = useState(false);
   const [highScore, setHighScore] = useState(0);
+  const [themeId, setThemeId] = useState<ThemeId>('maroc');
 
   // Modals state
   const [isPaused, setIsPaused] = useState(false);
@@ -67,9 +70,21 @@ export default function TetrisMarocApp() {
       const savedLang = localStorage.getItem('tetris_maroc_lang') as Language;
       if (savedLang === 'fr' || savedLang === 'en') setLang(savedLang);
 
+      const savedTheme = localStorage.getItem('tetris_maroc_theme') as ThemeId;
+      if (savedTheme === 'maroc' || savedTheme === 'galaxy' || savedTheme === 'beach') {
+        setThemeId(savedTheme);
+      }
+
       setIsMuted(soundManager.isMuted());
     }
   }, []);
+
+  const handleSelectTheme = (newTheme: ThemeId) => {
+    setThemeId(newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('tetris_maroc_theme', newTheme);
+    }
+  };
 
   const syncStateFromEngine = useCallback(() => {
     const engine = engineRef.current;
@@ -114,7 +129,6 @@ export default function TetrisMarocApp() {
     syncStateFromEngine();
     setScreen('game');
 
-    // Fetch anti-cheat token from server
     try {
       const res = await fetch('/api/game/start', { method: 'POST' });
       const data = await res.json();
@@ -271,14 +285,11 @@ export default function TetrisMarocApp() {
     const absY = Math.abs(dy);
 
     if (absX < 15 && absY < 15 && elapsed < 250) {
-      // Tap detected -> Rotate
       handleRotate();
     } else if (absX > absY && absX > 25) {
-      // Horizontal swipe
       if (dx > 0) handleMoveRight();
       else handleMoveLeft();
     } else if (absY > absX && dy > 30) {
-      // Downward swipe
       if (dy > 80) handleHardDrop();
       else handleSoftDrop();
     }
@@ -303,9 +314,9 @@ export default function TetrisMarocApp() {
     <main className="min-h-screen flex flex-col items-center justify-between text-white selection:bg-morocco-gold selection:text-black">
       {/* ================= HOME SCREEN ================= */}
       {screen === 'home' && (
-        <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto text-center animate-fade-in">
+        <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-md mx-auto text-center animate-fade-in">
           {/* Header tools */}
-          <div className="w-full flex items-center justify-between mb-6">
+          <div className="w-full flex items-center justify-between mb-4">
             <button
               onClick={toggleLanguage}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-morocco-card border border-morocco-border hover:border-morocco-gold/50 text-xs font-bold text-gray-300 transition-colors"
@@ -323,16 +334,15 @@ export default function TetrisMarocApp() {
             </button>
           </div>
 
-          {/* Moroccan Emblem & Title */}
-          <div className="relative mb-6">
-            <div className="w-24 h-24 mx-auto mb-4 relative flex items-center justify-center rounded-3xl bg-morocco-night border-2 border-morocco-gold shadow-[0_0_30px_rgba(212,175,55,0.25)]">
-              {/* Cherifian Star Emblem */}
-              <svg viewBox="0 0 100 100" className="w-16 h-16 fill-morocco-green filter drop-shadow-[0_0_8px_rgba(0,168,89,0.6)]">
+          {/* Emblem & Title */}
+          <div className="relative mb-5">
+            <div className="w-20 h-20 mx-auto mb-3 relative flex items-center justify-center rounded-3xl bg-morocco-night border-2 border-morocco-gold shadow-[0_0_30px_rgba(212,175,55,0.25)]">
+              <svg viewBox="0 0 100 100" className="w-14 h-14 fill-morocco-green filter drop-shadow-[0_0_8px_rgba(0,168,89,0.6)]">
                 <polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" />
               </svg>
             </div>
 
-            <div className="inline-block px-3 py-1 rounded-full bg-morocco-red/20 border border-morocco-red text-morocco-red-light text-[10px] font-black uppercase tracking-widest mb-2">
+            <div className="inline-block px-3 py-1 rounded-full bg-morocco-red/20 border border-morocco-red text-morocco-red-light text-[10px] font-black uppercase tracking-widest mb-1.5">
               {t.arcadeBadge}
             </div>
 
@@ -348,15 +358,20 @@ export default function TetrisMarocApp() {
 
           {/* High Score Badge */}
           {highScore > 0 && (
-            <div className="mb-6 px-4 py-2 rounded-xl bg-morocco-card border border-morocco-gold/40 flex items-center gap-2 shadow-inner">
+            <div className="mb-4 px-4 py-1.5 rounded-xl bg-morocco-card border border-morocco-gold/40 flex items-center gap-2 shadow-inner">
               <Trophy className="w-4 h-4 text-morocco-gold" />
               <span className="text-xs text-gray-400 uppercase tracking-wider">{t.highScore}:</span>
               <span className="text-base font-black font-mono text-morocco-gold">{highScore.toLocaleString()}</span>
             </div>
           )}
 
+          {/* Theme Selector on Home Screen */}
+          <div className="w-full mb-5">
+            <ThemeSelector currentTheme={themeId} onSelectTheme={handleSelectTheme} t={t} />
+          </div>
+
           {/* Action Buttons */}
-          <div className="w-full flex flex-col gap-3 mb-8">
+          <div className="w-full flex flex-col gap-2.5 mb-6">
             <button
               onClick={startGame}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-morocco-red via-morocco-red-light to-morocco-red border-2 border-morocco-gold shadow-[0_0_25px_rgba(193,39,45,0.4)] hover:shadow-[0_0_35px_rgba(193,39,45,0.6)] font-black text-xl tracking-widest uppercase transition-transform active:scale-95 flex items-center justify-center gap-2 text-white"
@@ -367,7 +382,7 @@ export default function TetrisMarocApp() {
 
             <button
               onClick={() => setShowLeaderboard(true)}
-              className="w-full py-3.5 rounded-2xl bg-morocco-night hover:bg-morocco-card border border-morocco-gold/50 text-morocco-gold font-bold text-sm tracking-wider uppercase transition-colors flex items-center justify-center gap-2 shadow-md"
+              className="w-full py-3 rounded-2xl bg-morocco-night hover:bg-morocco-card border border-morocco-gold/50 text-morocco-gold font-bold text-sm tracking-wider uppercase transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               <Trophy className="w-4 h-4 text-morocco-gold" />
               <span>{t.leaderboard}</span>
@@ -375,7 +390,7 @@ export default function TetrisMarocApp() {
           </div>
 
           {/* Quick instructions */}
-          <div className="w-full p-4 rounded-2xl bg-morocco-card/60 border border-morocco-border text-left text-xs text-gray-400 space-y-2">
+          <div className="w-full p-3.5 rounded-2xl bg-morocco-card/60 border border-morocco-border text-left text-xs text-gray-400 space-y-1.5">
             <div className="flex items-center gap-1.5 text-morocco-gold font-bold uppercase tracking-wider text-[11px]">
               <Gamepad2 className="w-4 h-4" />
               <span>{t.controlsTitle}</span>
@@ -389,7 +404,7 @@ export default function TetrisMarocApp() {
       {/* ================= GAMEPLAY SCREEN ================= */}
       {screen === 'game' && (
         <div className="w-full flex-1 flex flex-col max-w-md mx-auto h-full px-2 py-2 justify-between">
-          {/* Top Bar */}
+          {/* Top Bar with Live Theme Selector */}
           <div className="flex items-center justify-between px-2 py-1 mb-1">
             <button
               onClick={() => setScreen('home')}
@@ -399,11 +414,8 @@ export default function TetrisMarocApp() {
               <ArrowLeft className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center gap-1 text-xs font-black tracking-widest uppercase text-morocco-gold">
-              <span>TÉTRIS</span>
-              <span className="text-morocco-green">3D</span>
-              <span className="text-morocco-red">MAROC</span>
-            </div>
+            {/* Live Theme Switcher */}
+            <ThemeSelector currentTheme={themeId} onSelectTheme={handleSelectTheme} t={t} compact />
 
             <div className="flex items-center gap-1.5">
               <button
@@ -425,6 +437,8 @@ export default function TetrisMarocApp() {
                 highScore={highScore}
                 isPaused={isPaused}
                 isMuted={isMuted}
+                themeId={themeId}
+                onSelectTheme={handleSelectTheme}
                 onTogglePause={() => setIsPaused((p) => !p)}
                 onToggleMute={toggleSound}
                 t={t}
@@ -443,17 +457,18 @@ export default function TetrisMarocApp() {
                 ghostPos={ghostPos}
                 clearedLines={clearedLines}
                 isPaused={isPaused}
+                themeId={themeId}
               />
 
               {/* Mobile overlay HUD badge (score & next piece) */}
               <div className="md:hidden absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-                <div className="px-3 py-1 rounded-lg bg-morocco-night/85 backdrop-blur-md border border-morocco-gold/40 shadow-lg">
-                  <div className="text-[9px] text-gray-400 font-bold uppercase">{t.score}</div>
-                  <div className="text-base font-black font-mono text-morocco-gold">{stats.score.toLocaleString()}</div>
+                <div className="px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/30 shadow-lg">
+                  <div className="text-[9px] text-gray-300 font-bold uppercase">{t.score}</div>
+                  <div className="text-base font-black font-mono text-white">{stats.score.toLocaleString()}</div>
                 </div>
 
-                <div className="px-3 py-1 rounded-lg bg-morocco-night/85 backdrop-blur-md border border-morocco-gold/40 shadow-lg flex items-center gap-2">
-                  <div className="text-[9px] text-gray-400 font-bold uppercase">{t.nextPiece}</div>
+                <div className="px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/30 shadow-lg flex items-center gap-2">
+                  <div className="text-[9px] text-gray-300 font-bold uppercase">{t.nextPiece}</div>
                   <div className="text-xs font-black font-mono text-white">{nextPiece}</div>
                 </div>
               </div>
@@ -487,6 +502,8 @@ export default function TetrisMarocApp() {
         onToggleMute={toggleSound}
         lang={lang}
         onToggleLang={toggleLanguage}
+        themeId={themeId}
+        onSelectTheme={handleSelectTheme}
         t={t}
       />
 

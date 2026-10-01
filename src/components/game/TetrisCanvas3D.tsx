@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Grid, ActivePiece, Position } from '@/types/game';
+import { ThemeId, THEMES } from '@/types/theme';
 import { TETROMINOES } from '@/core/tetrominoes';
 import { GRID_COLS, GRID_ROWS } from '@/core/engine';
 
@@ -12,6 +13,127 @@ interface TetrisCanvas3DProps {
   ghostPos: Position | null;
   clearedLines: number[];
   isPaused: boolean;
+  themeId: ThemeId;
+}
+
+// Procedural texture generator for realistic moon
+function createProceduralMoonTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  // Base lunar regolith tone (light gray)
+  ctx.fillStyle = '#b8bec7';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Lunar Maria (Dark basaltic volcanic plains)
+  const mariaBlobs = [
+    { x: 340, y: 190, r: 120 }, // Mare Tranquillitatis
+    { x: 440, y: 220, r: 90 },  // Mare Fecunditatis
+    { x: 260, y: 160, r: 140 }, // Mare Imbrium
+    { x: 180, y: 220, r: 100 }, // Oceanus Procellarum
+    { x: 310, y: 320, r: 85 },  // Mare Nubium
+  ];
+
+  mariaBlobs.forEach((m) => {
+    const grad = ctx.createRadialGradient(m.x, m.y, m.r * 0.1, m.x, m.y, m.r);
+    grad.addColorStop(0, 'rgba(68, 76, 89, 0.85)');
+    grad.addColorStop(0.7, 'rgba(92, 101, 116, 0.6)');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Random realistic craters with shadowed interior and illuminated white rim
+  for (let i = 0; i < 240; i++) {
+    const cx = Math.random() * canvas.width;
+    const cy = Math.random() * canvas.height;
+    const cr = Math.random() * 16 + 2;
+
+    // Dark crater basin
+    ctx.fillStyle = 'rgba(40, 45, 52, 0.4)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright illuminated rim
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = Math.max(1, cr * 0.2);
+    ctx.beginPath();
+    ctx.arc(cx - cr * 0.15, cy - cr * 0.15, cr, Math.PI * 0.7, Math.PI * 1.8);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  return texture;
+}
+
+// Procedural palm tree 3D model generator
+function createPalmTreeGroup(scale = 1.0, leanAngle = 0.15): THREE.Group {
+  const palmGroup = new THREE.Group();
+
+  // Segmented curved trunk
+  const trunkMat = new THREE.MeshStandardMaterial({
+    color: 0x6d4c41,
+    roughness: 0.9,
+    metalness: 0.1,
+  });
+
+  const segments = 6;
+  const segHeight = 1.2 * scale;
+  let currY = 0;
+  let currX = 0;
+
+  for (let i = 0; i < segments; i++) {
+    const radiusTop = (0.35 - i * 0.03) * scale;
+    const radiusBottom = (0.42 - i * 0.03) * scale;
+    const segGeo = new THREE.CylinderGeometry(radiusTop, radiusBottom, segHeight, 7);
+    const segMesh = new THREE.Mesh(segGeo, trunkMat);
+
+    segMesh.position.set(currX, currY + segHeight / 2, 0);
+    segMesh.rotation.z = leanAngle * (i + 1) * 0.25;
+    palmGroup.add(segMesh);
+
+    currY += segHeight * 0.95;
+    currX += Math.sin(segMesh.rotation.z) * segHeight * 0.6;
+  }
+
+  // Coconuts cluster
+  const coconutMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.8 });
+  const coconutGeo = new THREE.SphereGeometry(0.22 * scale, 6, 6);
+  for (let c = 0; c < 4; c++) {
+    const angle = (c * Math.PI) / 2;
+    const coco = new THREE.Mesh(coconutGeo, coconutMat);
+    coco.position.set(currX + Math.cos(angle) * 0.3 * scale, currY - 0.15 * scale, Math.sin(angle) * 0.3 * scale);
+    palmGroup.add(coco);
+  }
+
+  // Radiating palm fronds / leaves
+  const leafMat = new THREE.MeshStandardMaterial({
+    color: 0x15803d,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+  });
+
+  const frondsCount = 9;
+  for (let f = 0; f < frondsCount; f++) {
+    const frondAngle = (f / frondsCount) * Math.PI * 2;
+    const leafGeo = new THREE.ConeGeometry(0.55 * scale, 3.2 * scale, 5);
+    const leafMesh = new THREE.Mesh(leafGeo, leafMat);
+
+    leafMesh.position.set(currX, currY + 0.1 * scale, 0);
+    leafMesh.rotation.y = frondAngle;
+    leafMesh.rotation.x = Math.PI * 0.42; // drooping curve downwards
+    leafMesh.rotation.z = Math.PI * 0.15;
+    palmGroup.add(leafMesh);
+  }
+
+  return palmGroup;
 }
 
 export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
@@ -20,16 +142,38 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
   ghostPos,
   clearedLines,
   isPaused,
+  themeId,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+
+  // Dynamic Scene Elements
   const blocksGroupRef = useRef<THREE.Group | null>(null);
   const activeGroupRef = useRef<THREE.Group | null>(null);
   const ghostGroupRef = useRef<THREE.Group | null>(null);
   const particlesGroupRef = useRef<THREE.Group | null>(null);
   const frameIdRef = useRef<number>(0);
+
+  // Environment Groups
+  const marocEnvGroupRef = useRef<THREE.Group | null>(null);
+  const galaxyEnvGroupRef = useRef<THREE.Group | null>(null);
+  const beachEnvGroupRef = useRef<THREE.Group | null>(null);
+
+  // Animated elements references
+  const oceanMeshRef = useRef<THREE.Mesh | null>(null);
+  const moonMeshRef = useRef<THREE.Mesh | null>(null);
+  const starPointsRef = useRef<THREE.Points | null>(null);
+
+  // Lights & Board materials for dynamic theme switching
+  const ambientLightRef = useRef<THREE.AmbientLight | null>(null);
+  const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
+  const pointLight1Ref = useRef<THREE.PointLight | null>(null);
+  const pointLight2Ref = useRef<THREE.PointLight | null>(null);
+  const backPlaneMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const borderMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const gridLinesMatRef = useRef<THREE.LineBasicMaterial | null>(null);
 
   // Reusable geometries & materials cache
   const boxGeoRef = useRef<THREE.BoxGeometry | null>(null);
@@ -45,13 +189,12 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x070c14); // Deep night sky
-    scene.fog = new THREE.FogExp2(0x070c14, 0.025);
+    scene.background = new THREE.Color(THEMES[themeId].skyColor);
+    scene.fog = new THREE.FogExp2(THEMES[themeId].fogColor, THEMES[themeId].fogDensity);
     sceneRef.current = scene;
 
-    // Camera: centered at grid center (X: 0, Y: 0)
-    // Board will be placed from x: -5 to +5, y: -10 to +10
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 120);
     camera.position.set(0, 0, 26);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
@@ -65,28 +208,33 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lighting (Warm Moroccan ambient + directional key light + emerald rim light)
-    const ambientLight = new THREE.AmbientLight(0xfff5e6, 0.7);
+    // Dynamic Lights
+    const cfg = THEMES[themeId];
+    const ambientLight = new THREE.AmbientLight(cfg.ambientLight.color, cfg.ambientLight.intensity);
     scene.add(ambientLight);
+    ambientLightRef.current = ambientLight;
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(8, 15, 18);
+    const dirLight = new THREE.DirectionalLight(cfg.dirLight.color, cfg.dirLight.intensity);
+    dirLight.position.set(...cfg.dirLight.position);
     scene.add(dirLight);
+    dirLightRef.current = dirLight;
 
-    const emeraldRimLight = new THREE.PointLight(0x00a859, 1.5, 30);
-    emeraldRimLight.position.set(-8, -6, 10);
-    scene.add(emeraldRimLight);
+    const pointLight1 = new THREE.PointLight(cfg.pointLight1.color, cfg.pointLight1.intensity, 35);
+    pointLight1.position.set(...cfg.pointLight1.position);
+    scene.add(pointLight1);
+    pointLight1Ref.current = pointLight1;
 
-    const royalGoldLight = new THREE.PointLight(0xd4af37, 1.2, 25);
-    royalGoldLight.position.set(8, 10, 8);
-    scene.add(royalGoldLight);
+    const pointLight2 = new THREE.PointLight(cfg.pointLight2.color, cfg.pointLight2.intensity, 30);
+    pointLight2.position.set(...cfg.pointLight2.position);
+    scene.add(pointLight2);
+    pointLight2Ref.current = pointLight2;
 
     // Shared geometry for blocks
-    const blockSize = 0.94; // slight gap between blocks
+    const blockSize = 0.94;
     const boxGeo = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
     boxGeoRef.current = boxGeo;
 
-    // Ghost material (translucent neon outline)
+    // Ghost material
     ghostMatRef.current = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       wireframe: true,
@@ -94,16 +242,19 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
       opacity: 0.35,
     });
 
-    // Create Board Background & Frame (Moroccan arch architectural contour)
+    // --- BOARD FRAME & BACKING ---
     const frameGroup = new THREE.Group();
 
     // Backing plane
     const backPlaneGeo = new THREE.PlaneGeometry(GRID_COLS, GRID_ROWS);
     const backPlaneMat = new THREE.MeshStandardMaterial({
-      color: 0x09111c,
-      roughness: 0.9,
-      metalness: 0.1,
+      color: cfg.boardBackingColor,
+      roughness: 0.85,
+      metalness: 0.15,
+      transparent: true,
+      opacity: 0.88,
     });
+    backPlaneMatRef.current = backPlaneMat;
     const backPlane = new THREE.Mesh(backPlaneGeo, backPlaneMat);
     backPlane.position.set(0, 0, -0.52);
     frameGroup.add(backPlane);
@@ -124,45 +275,173 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     }
     gridLinesGeo.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
     const gridLinesMat = new THREE.LineBasicMaterial({
-      color: 0x1e2d42,
+      color: cfg.gridLinesColor,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.55,
     });
+    gridLinesMatRef.current = gridLinesMat;
     const gridLines = new THREE.LineSegments(gridLinesGeo, gridLinesMat);
     frameGroup.add(gridLines);
 
-    // Frame Borders (Gold and Moroccan Red accents)
+    // Frame Borders
     const borderMat = new THREE.MeshStandardMaterial({
-      color: 0xd4af37,
+      color: cfg.boardBorderColor,
       metalness: 0.6,
       roughness: 0.3,
     });
+    borderMatRef.current = borderMat;
+
     const sideBorderGeo = new THREE.BoxGeometry(0.3, GRID_ROWS + 0.6, 0.8);
     const topBorderGeo = new THREE.BoxGeometry(GRID_COLS + 0.6, 0.3, 0.8);
 
-    // Left border
     const leftBorder = new THREE.Mesh(sideBorderGeo, borderMat);
     leftBorder.position.set(-halfW - 0.15, 0, 0);
     frameGroup.add(leftBorder);
 
-    // Right border
     const rightBorder = new THREE.Mesh(sideBorderGeo, borderMat);
     rightBorder.position.set(halfW + 0.15, 0, 0);
     frameGroup.add(rightBorder);
 
-    // Bottom border
     const bottomBorder = new THREE.Mesh(topBorderGeo, borderMat);
     bottomBorder.position.set(0, -halfH - 0.15, 0);
     frameGroup.add(bottomBorder);
 
-    // Top border
     const topBorder = new THREE.Mesh(topBorderGeo, borderMat);
     topBorder.position.set(0, halfH + 0.15, 0);
     frameGroup.add(topBorder);
 
     scene.add(frameGroup);
 
-    // Groups for dynamic game elements
+    // ==============================================================
+    // 1. THEME MAROC: Watermark Emblem & Architectural Lighting
+    // ==============================================================
+    const marocEnvGroup = new THREE.Group();
+    scene.add(marocEnvGroup);
+    marocEnvGroupRef.current = marocEnvGroup;
+
+    // ==============================================================
+    // 2. THEME GALAXY: Realistic 3D Moon & Starfield & Cosmic Nebula
+    // ==============================================================
+    const galaxyEnvGroup = new THREE.Group();
+    scene.add(galaxyEnvGroup);
+    galaxyEnvGroupRef.current = galaxyEnvGroup;
+
+    // Realistic Starfield (1,500 3D Points)
+    const starCount = 1500;
+    const starGeo = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    const starColors = new Float32Array(starCount * 3);
+
+    for (let i = 0; i < starCount; i++) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 80;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 60;
+      starPositions[i * 3 + 2] = -12 - Math.random() * 45;
+
+      // Realistic cosmic star colors: crisp blue-white, warm amber, violet
+      const r = 0.7 + Math.random() * 0.3;
+      const g = 0.8 + Math.random() * 0.2;
+      const b = 0.95 + Math.random() * 0.05;
+      starColors[i * 3] = r;
+      starColors[i * 3 + 1] = g;
+      starColors[i * 3 + 2] = b;
+    }
+
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+
+    const starMat = new THREE.PointsMaterial({
+      size: 0.55,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const starPoints = new THREE.Points(starGeo, starMat);
+    galaxyEnvGroup.add(starPoints);
+    starPointsRef.current = starPoints;
+
+    // Realistic 3D Moon Sphere with Procedural Crater Map
+    const moonGeo = new THREE.SphereGeometry(3.4, 36, 36);
+    const moonTex = createProceduralMoonTexture();
+    const moonMat = new THREE.MeshStandardMaterial({
+      map: moonTex,
+      bumpMap: moonTex,
+      bumpScale: 0.18,
+      roughness: 0.88,
+      metalness: 0.05,
+    });
+    const moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    moonMesh.position.set(7.5, 7.8, -12); // upper-right sky
+    galaxyEnvGroup.add(moonMesh);
+    moonMeshRef.current = moonMesh;
+
+    // Soft Lunar glow sprite / billboard
+    const glowGeo = new THREE.PlaneGeometry(10, 10);
+    const glowCanvas = document.createElement('canvas');
+    glowCanvas.width = 128;
+    glowCanvas.height = 128;
+    const gctx = glowCanvas.getContext('2d')!;
+    const ggrad = gctx.createRadialGradient(64, 64, 10, 64, 64, 60);
+    ggrad.addColorStop(0, 'rgba(190, 220, 255, 0.45)');
+    ggrad.addColorStop(0.5, 'rgba(120, 160, 255, 0.15)');
+    ggrad.addColorStop(1, 'transparent');
+    gctx.fillStyle = ggrad;
+    gctx.fillRect(0, 0, 128, 128);
+
+    const glowTex = new THREE.CanvasTexture(glowCanvas);
+    const glowMat = new THREE.MeshBasicMaterial({
+      map: glowTex,
+      transparent: true,
+      opacity: 0.8,
+      depthWrite: false,
+    });
+    const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+    glowMesh.position.set(7.5, 7.8, -12.1);
+    galaxyEnvGroup.add(glowMesh);
+
+    // ==============================================================
+    // 3. THEME BEACH: Realistic Animated Ocean, Dunes & Palm Trees
+    // ==============================================================
+    const beachEnvGroup = new THREE.Group();
+    scene.add(beachEnvGroup);
+    beachEnvGroupRef.current = beachEnvGroup;
+
+    // Animated Ocean Plane
+    const oceanGeo = new THREE.PlaneGeometry(55, 30, 48, 28);
+    const oceanMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7, // Tropical turquoise ocean
+      roughness: 0.15,
+      metalness: 0.35,
+      flatShading: true,
+    });
+    const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
+    oceanMesh.position.set(0, -9.5, -4);
+    oceanMesh.rotation.x = -Math.PI * 0.44;
+    beachEnvGroup.add(oceanMesh);
+    oceanMeshRef.current = oceanMesh;
+
+    // Golden Beach Sand Dune
+    const sandGeo = new THREE.PlaneGeometry(50, 14, 16, 8);
+    const sandMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706, // Warm Sahara / Atlantic beach sand
+      roughness: 0.95,
+      metalness: 0.05,
+    });
+    const sandMesh = new THREE.Mesh(sandGeo, sandMat);
+    sandMesh.position.set(0, -11.5, -1);
+    sandMesh.rotation.x = -Math.PI * 0.48;
+    beachEnvGroup.add(sandMesh);
+
+    // Left Cocotier / Palm Tree
+    const leftPalm = createPalmTreeGroup(1.15, 0.22);
+    leftPalm.position.set(-8.8, -10.5, -1.8);
+    beachEnvGroup.add(leftPalm);
+
+    // Right Cocotier / Palm Tree
+    const rightPalm = createPalmTreeGroup(1.05, -0.2);
+    rightPalm.position.set(8.8, -10.8, -1.5);
+    beachEnvGroup.add(rightPalm);
+
+    // Groups for dynamic game pieces
     const blocksGroup = new THREE.Group();
     scene.add(blocksGroup);
     blocksGroupRef.current = blocksGroup;
@@ -179,14 +458,13 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     scene.add(particlesGroup);
     particlesGroupRef.current = particlesGroup;
 
-    // Handle Window / Container Resize
+    // Handle Window Resize
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
       camera.aspect = w / h;
 
-      // Adapt distance for mobile portrait so whole board is always visible
       if (camera.aspect < 0.6) {
         camera.position.z = 29; // phone portrait
       } else if (camera.aspect < 1.0) {
@@ -202,28 +480,59 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     window.addEventListener('resize', handleResize);
     handleResize();
 
+    // Store original wave coordinates
+    const wavePosAttr = oceanGeo.attributes.position;
+    const waveCount = wavePosAttr.count;
+    const originalZ = new Float32Array(waveCount);
+    for (let i = 0; i < waveCount; i++) {
+      originalZ[i] = wavePosAttr.getZ(i);
+    }
+
     // Render loop
     const animate = () => {
       frameIdRef.current = requestAnimationFrame(animate);
+      const time = performance.now() * 0.0015;
 
-      // Subtle gentle rotation of active piece highlight
+      // 1. Animate Ocean Waves (Beach Theme)
+      if (oceanMeshRef.current && beachEnvGroup.visible) {
+        const pos = oceanGeo.attributes.position;
+        for (let i = 0; i < waveCount; i++) {
+          const u = pos.getX(i);
+          const v = pos.getY(i);
+          const z =
+            originalZ[i] +
+            Math.sin(time * 2.2 + u * 0.45) * 0.35 +
+            Math.cos(time * 1.8 + v * 0.35) * 0.25;
+          pos.setZ(i, z);
+        }
+        pos.needsUpdate = true;
+      }
+
+      // 2. Animate Moon Rotation & Twinkle (Galaxy Theme)
+      if (moonMeshRef.current && galaxyEnvGroup.visible) {
+        moonMeshRef.current.rotation.y = time * 0.04;
+      }
+      if (starPointsRef.current && galaxyEnvGroup.visible) {
+        starPointsRef.current.rotation.y = time * 0.008;
+      }
+
+      // 3. Active piece breathing pulse
       if (activeGroupRef.current) {
         activeGroupRef.current.children.forEach((child) => {
           if (child instanceof THREE.Mesh) {
-            // subtle breathing pulse
-            const s = 1.0 + Math.sin(Date.now() * 0.005) * 0.02;
+            const s = 1.0 + Math.sin(time * 4) * 0.02;
             child.scale.set(s, s, s);
           }
         });
       }
 
-      // Animate line clear particle debris
+      // 4. Line clear particles
       if (particlesGroupRef.current) {
         particlesGroupRef.current.children.forEach((p) => {
           const velocity = p.userData.velocity as THREE.Vector3;
           if (velocity) {
             p.position.add(velocity);
-            velocity.y -= 0.015; // gravity
+            velocity.y -= 0.015;
             p.rotation.x += 0.05;
             p.rotation.y += 0.05;
             const mat = (p as THREE.Mesh).material as THREE.Material;
@@ -233,7 +542,6 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
           }
         });
 
-        // Cleanup dead particles
         particlesGroupRef.current.children = particlesGroupRef.current.children.filter((p) => {
           const mat = (p as THREE.Mesh).material as THREE.Material;
           return mat && 'opacity' in mat && (mat as THREE.MeshBasicMaterial).opacity > 0.05;
@@ -255,9 +563,62 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     };
   }, []);
 
-  // Coordinate helper: converts Grid (col, row) to Three.js (x, y, z)
-  // Grid col (0..9) -> Three.js x: -4.5 to +4.5
-  // Grid row (0..19) -> Three.js y: +9.5 (top) to -9.5 (bottom)
+  // Update Theme Elements when themeId changes
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    const cfg = THEMES[themeId];
+
+    // Background & Fog
+    scene.background = new THREE.Color(cfg.skyColor);
+    scene.fog = new THREE.FogExp2(cfg.fogColor, cfg.fogDensity);
+
+    // Lights
+    if (ambientLightRef.current) {
+      ambientLightRef.current.color.setHex(cfg.ambientLight.color);
+      ambientLightRef.current.intensity = cfg.ambientLight.intensity;
+    }
+    if (dirLightRef.current) {
+      dirLightRef.current.color.setHex(cfg.dirLight.color);
+      dirLightRef.current.intensity = cfg.dirLight.intensity;
+      dirLightRef.current.position.set(...cfg.dirLight.position);
+    }
+    if (pointLight1Ref.current) {
+      pointLight1Ref.current.color.setHex(cfg.pointLight1.color);
+      pointLight1Ref.current.intensity = cfg.pointLight1.intensity;
+      pointLight1Ref.current.position.set(...cfg.pointLight1.position);
+    }
+    if (pointLight2Ref.current) {
+      pointLight2Ref.current.color.setHex(cfg.pointLight2.color);
+      pointLight2Ref.current.intensity = cfg.pointLight2.intensity;
+      pointLight2Ref.current.position.set(...cfg.pointLight2.position);
+    }
+
+    // Board Frame & Backing colors
+    if (backPlaneMatRef.current) {
+      backPlaneMatRef.current.color.setHex(cfg.boardBackingColor);
+    }
+    if (borderMatRef.current) {
+      borderMatRef.current.color.setHex(cfg.boardBorderColor);
+    }
+    if (gridLinesMatRef.current) {
+      gridLinesMatRef.current.color.setHex(cfg.gridLinesColor);
+    }
+
+    // Visibility toggles for environmental groups
+    if (marocEnvGroupRef.current) {
+      marocEnvGroupRef.current.visible = themeId === 'maroc';
+    }
+    if (galaxyEnvGroupRef.current) {
+      galaxyEnvGroupRef.current.visible = themeId === 'galaxy';
+    }
+    if (beachEnvGroupRef.current) {
+      beachEnvGroupRef.current.visible = themeId === 'beach';
+    }
+  }, [themeId]);
+
+  // Coordinate helper: Grid col (0..9) -> Three.js x, Grid row (0..19) -> Three.js y
   const gridToThreePos = (col: number, row: number): [number, number, number] => {
     const x = col - (GRID_COLS - 1) / 2;
     const y = (GRID_ROWS - 1) / 2 - row;
@@ -270,7 +631,6 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     const boxGeo = boxGeoRef.current;
     if (!group || !boxGeo) return;
 
-    // Clear previous blocks
     while (group.children.length > 0) {
       const obj = group.children.pop();
       if (obj instanceof THREE.Mesh) {
@@ -282,7 +642,6 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
       }
     }
 
-    // Material cache per color
     const materialCache = new Map<string, THREE.MeshStandardMaterial>();
 
     for (let r = 0; r < GRID_ROWS; r++) {
@@ -317,13 +676,10 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
 
     if (!activeGroup || !ghostGroup || !boxGeo || !ghostMat) return;
 
-    // Clear active piece meshes
     while (activeGroup.children.length > 0) {
       const m = activeGroup.children.pop();
       if (m instanceof THREE.Mesh && m.material) m.material.dispose();
     }
-
-    // Clear ghost piece meshes
     while (ghostGroup.children.length > 0) {
       ghostGroup.children.pop();
     }
@@ -333,7 +689,6 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     const def = TETROMINOES[activePiece.type];
     const shape = def.shapes[activePiece.rotation];
 
-    // Active piece material with subtle emissive shimmer
     const activeMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(def.color),
       emissive: new THREE.Color(def.highlightColor),
@@ -351,11 +706,10 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
           if (blockRow >= 0 && blockRow < GRID_ROWS && blockCol >= 0 && blockCol < GRID_COLS) {
             const mesh = new THREE.Mesh(boxGeo, activeMat);
             const [x, y, z] = gridToThreePos(blockCol, blockRow);
-            mesh.position.set(x, y, z + 0.05); // slight elevation forward
+            mesh.position.set(x, y, z + 0.05);
             activeGroup.add(mesh);
           }
 
-          // Ghost piece blocks
           if (ghostPos) {
             const ghostRow = ghostPos.y + r;
             if (ghostRow >= 0 && ghostRow < GRID_ROWS && blockCol >= 0 && blockCol < GRID_COLS) {
@@ -377,7 +731,7 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     if (!particlesGroup) return;
 
     const miniGeo = new THREE.BoxGeometry(0.25, 0.25, 0.25);
-    const colors = [0xc1272d, 0x006233, 0xd4af37, 0xffffff];
+    const colors = THEMES[themeId].particleColors;
 
     clearedLines.forEach((rowIdx) => {
       for (let c = 0; c < GRID_COLS; c += 2) {
@@ -406,24 +760,33 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
         }
       }
     });
-  }, [clearedLines]);
+  }, [clearedLines, themeId]);
 
   return (
     <div
       ref={mountRef}
-      className="relative w-full h-full min-h-[460px] md:min-h-[580px] flex items-center justify-center overflow-hidden rounded-xl bg-morocco-night shadow-2xl border border-morocco-gold/30"
+      className="relative w-full h-full min-h-[460px] md:min-h-[580px] flex items-center justify-center overflow-hidden rounded-xl shadow-2xl border transition-colors duration-500"
+      style={{
+        borderColor:
+          themeId === 'maroc'
+            ? 'rgba(212, 175, 55, 0.4)'
+            : themeId === 'galaxy'
+            ? 'rgba(96, 165, 250, 0.4)'
+            : 'rgba(245, 158, 11, 0.4)',
+      }}
     >
-      {/* Subtle Moroccan background emblem */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-5">
-        <svg viewBox="0 0 100 100" className="w-80 h-80 fill-current text-morocco-green">
-          {/* Moroccan 5-pointed Cherifian Star */}
-          <polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" />
-        </svg>
-      </div>
+      {/* Moroccan emblem for Maroc theme */}
+      {themeId === 'maroc' && (
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-5">
+          <svg viewBox="0 0 100 100" className="w-80 h-80 fill-current text-morocco-green">
+            <polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" />
+          </svg>
+        </div>
+      )}
 
       {isPaused && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="text-morocco-gold text-2xl font-bold tracking-widest uppercase border-2 border-morocco-gold px-6 py-2 rounded-lg bg-morocco-night/90 shadow-xl">
+          <div className="text-white text-2xl font-bold tracking-widest uppercase border-2 border-white/60 px-6 py-2 rounded-lg bg-black/80 shadow-xl">
             PAUSE
           </div>
         </div>

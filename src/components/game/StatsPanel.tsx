@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { TetrominoType, GameStats } from '@/types/game';
+import { ThemeId } from '@/types/theme';
 import { TETROMINOES } from '@/core/tetrominoes';
 import { Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import { Translations } from '@/lib/i18n';
+import { ThemeSelector } from '@/components/ui/ThemeSelector';
 
 interface StatsPanelProps {
   stats: GameStats;
@@ -12,6 +14,8 @@ interface StatsPanelProps {
   highScore: number;
   isPaused: boolean;
   isMuted: boolean;
+  themeId: ThemeId;
+  onSelectTheme: (theme: ThemeId) => void;
   onTogglePause: () => void;
   onToggleMute: () => void;
   t: Translations;
@@ -23,6 +27,8 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
   highScore,
   isPaused,
   isMuted,
+  themeId,
+  onSelectTheme,
   onTogglePause,
   onToggleMute,
   t,
@@ -107,6 +113,11 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        {/* Theme Switcher on lateral panel */}
+        <div className="p-2.5 rounded-xl bg-morocco-card border border-morocco-border">
+          <ThemeSelector currentTheme={themeId} onSelectTheme={onSelectTheme} t={t} compact />
         </div>
       </div>
     </div>

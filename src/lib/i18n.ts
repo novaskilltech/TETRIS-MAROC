@@ -44,6 +44,10 @@ export interface Translations {
   noScoresYet: string;
   languageName: string;
   newHighScore: string;
+  themeTitle: string;
+  themeMaroc: string;
+  themeGalaxy: string;
+  themeBeach: string;
 }
 
 export const DICTIONARY: Record<Language, Translations> = {
@@ -91,6 +95,10 @@ export const DICTIONARY: Record<Language, Translations> = {
     noScoresYet: 'Aucun score enregistré pour l\'instant.',
     languageName: 'Français',
     newHighScore: 'NOUVEAU RECORD PERSONNEL !',
+    themeTitle: 'THÈME',
+    themeMaroc: 'Maroc Impérial',
+    themeGalaxy: 'Galaxie Lunaire',
+    themeBeach: 'Plage Tropicale',
   },
   en: {
     gameTitle: 'TETRIS 3D MOROCCO',
@@ -136,5 +144,9 @@ export const DICTIONARY: Record<Language, Translations> = {
     noScoresYet: 'No scores recorded yet.',
     languageName: 'English',
     newHighScore: 'NEW PERSONAL RECORD!',
+    themeTitle: 'THEME',
+    themeMaroc: 'Imperial Morocco',
+    themeGalaxy: 'Lunar Galaxy',
+    themeBeach: 'Tropical Beach',
   },
 };
