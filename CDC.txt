@@ -1,0 +1,1435 @@
+Voici la **relecture intégrale et consolidée du cahier des charges actuel**, sans m’arrêter à un résumé. J’intègre toutes les décisions prises jusqu’ici et je signale explicitement ce qui reste à définir, conformément au cadre NOVA CDC. :chatgpt-content-reference{index="0"}
+
+# CAHIER DES CHARGES — TETRIS 3D MAROC
+
+## Version
+**CDC v0.3 — Consolidation complète**
+
+## Statut
+Le cadrage produit principal est validé.
+
+Le MVP est défini dans ses grandes lignes.
+
+Certains paramètres précis de gameplay restent à spécifier avant passage en version vFinal :
+- formule exacte du score ;
+- vitesse par niveau ;
+- règles exactes de rotation ;
+- gestion des wall kicks ;
+- dimensions définitives de la grille ;
+- logique détaillée de validation anti-triche ;
+- volume exact du leaderboard affiché.
+
+---
+
+# 1. RÉSUMÉ DU PROJET
+
+Le projet consiste à créer un jeu de type **Tetris**, accessible gratuitement depuis un navigateur web, avec :
+
+- un gameplay classique en 2D ;
+- un rendu graphique en 3D ;
+- une identité visuelle inspirée du Maroc ;
+- une palette principalement rouge et verte ;
+- des références visuelles au drapeau marocain ;
+- un fonctionnement sur PC et téléphone ;
+- une priorité particulière à l’expérience mobile en orientation portrait ;
+- un classement mondial en ligne ;
+- aucun compte utilisateur obligatoire ;
+- un fonctionnement inspiré des bornes d’arcade ;
+- aucun système de musique ;
+- uniquement des effets sonores ;
+- aucune monétisation au lancement.
+
+Le joueur doit pouvoir ouvrir le jeu et commencer immédiatement une partie.
+
+À la fin de sa partie, il peut saisir un pseudo et publier son score dans le classement mondial.
+
+---
+
+# 2. CONTEXTE
+
+L’objectif n’est pas de créer un Tetris réellement tridimensionnel dans lequel les pièces se déplacent en profondeur.
+
+La mécanique du jeu reste celle d’un Tetris classique sur une grille 2D.
+
+La 3D concerne uniquement :
+
+- l’apparence des blocs ;
+- les éclairages ;
+- les ombres ;
+- les animations ;
+- le décor ;
+- certains effets visuels.
+
+Cette décision permet de conserver :
+
+- une excellente lisibilité ;
+- un gameplay immédiatement compréhensible ;
+- une expérience proche du Tetris traditionnel ;
+- une réalisation plus simple et plus fiable ;
+- une compatibilité correcte sur smartphone.
+
+---
+
+# 3. OBJECTIF BUSINESS
+
+Le premier objectif est de publier un jeu gratuit et accessible publiquement.
+
+Le MVP ne cherche pas immédiatement à générer des revenus.
+
+Il doit principalement permettre de :
+
+- attirer des joueurs ;
+- créer une expérience arcade simple ;
+- mesurer l’intérêt réel pour le jeu ;
+- obtenir des parties jouées ;
+- créer une compétition grâce au classement mondial ;
+- établir une identité visuelle reconnaissable.
+
+Une monétisation éventuelle pourra être étudiée plus tard.
+
+Elle devra être principalement basée sur des éléments cosmétiques.
+
+---
+
+# 4. CIBLE UTILISATEUR
+
+La cible principale est constituée de joueurs casual.
+
+Le jeu doit être adapté à :
+
+- des joueurs sur smartphone ;
+- des joueurs sur ordinateur ;
+- des personnes connaissant déjà Tetris ;
+- des joueurs pouvant découvrir immédiatement les règles sans tutoriel complexe.
+
+L’expérience doit être suffisamment simple pour permettre de commencer à jouer pratiquement immédiatement.
+
+---
+
+# 5. PROBLÈME À RÉSOUDRE
+
+Le produit doit proposer un jeu :
+
+- très simple d’accès ;
+- immédiatement jouable ;
+- compétitif sans nécessiter de création de compte ;
+- agréable sur téléphone ;
+- visuellement différent d’un clone générique de Tetris.
+
+Le principal élément différenciant est son identité marocaine et son esthétique 3D.
+
+---
+
+# 6. PROPOSITION DE VALEUR
+
+La proposition de valeur est :
+
+**Un jeu de blocs arcade simple et rapide, inspiré du gameplay classique de Tetris, modernisé avec un rendu 3D et une identité graphique marocaine forte, permettant aux joueurs du monde entier de comparer leurs scores sans créer de compte.**
+
+---
+
+# 7. MODÈLE DE DISTRIBUTION
+
+Le jeu sera distribué sur le Web.
+
+Il ne sera pas nécessaire, pour le MVP, de publier le jeu sur :
+
+- Google Play ;
+- Apple App Store ;
+- autres boutiques mobiles.
+
+Le joueur devra pouvoir accéder directement au jeu depuis une URL.
+
+Le site devra fonctionner sur :
+
+- smartphone ;
+- ordinateur de bureau ;
+- ordinateur portable.
+
+---
+
+# 8. ORIENTATION MOBILE
+
+La version téléphone doit être conçue en priorité pour une utilisation :
+
+**en mode portrait.**
+
+Cette décision correspond au format naturel d’un jeu de type Tetris.
+
+Le plateau doit rester parfaitement lisible sur un écran de smartphone.
+
+---
+
+# 9. LANGUES
+
+Le produit doit être disponible en :
+
+- français ;
+- anglais.
+
+L’arabe n’est pas requis dans le MVP.
+
+L’utilisateur doit pouvoir changer la langue depuis l’interface.
+
+Les textes du jeu doivent donc être prévus pour être internationalisables.
+
+---
+
+# 10. IDENTITÉ VISUELLE
+
+La direction artistique est inspirée du Maroc.
+
+## Couleurs principales
+
+La palette doit principalement utiliser :
+
+- rouge ;
+- vert.
+
+Ces couleurs font référence au drapeau marocain.
+
+## Drapeau marocain
+
+Des éléments graphiques inspirés du drapeau marocain peuvent être intégrés.
+
+L’étoile verte peut notamment être utilisée :
+
+- dans le logo ;
+- dans l’interface ;
+- dans le décor ;
+- sur l’écran d’accueil ;
+- dans certains effets visuels.
+
+Elle ne doit cependant pas gêner la lecture du plateau de jeu.
+
+## Principe de lisibilité
+
+Le rouge et le vert ne doivent pas devenir les seuls moyens d’identifier les informations importantes.
+
+Le jeu doit utiliser également :
+
+- les formes ;
+- le relief ;
+- les contrastes ;
+- les contours ;
+- les différences de luminosité.
+
+Cela permet de conserver une bonne lisibilité, notamment pour les personnes ayant des difficultés de perception des couleurs.
+
+---
+
+# 11. GAMEPLAY
+
+Le gameplay est basé sur un Tetris classique.
+
+Des pièces composées de plusieurs blocs descendent depuis le haut du plateau.
+
+Le joueur peut les déplacer et les faire tourner.
+
+Lorsqu’une ligne horizontale est entièrement remplie, elle disparaît.
+
+La disparition de lignes rapporte des points.
+
+La partie devient progressivement plus difficile.
+
+Lorsque les pièces atteignent une situation dans laquelle une nouvelle pièce ne peut plus apparaître correctement, la partie se termine.
+
+---
+
+# 12. PIÈCES
+
+Le MVP utilise les sept formes classiques de tétriminos.
+
+Les pièces doivent être visuellement distinctes.
+
+Le rendu doit leur donner une apparence tridimensionnelle.
+
+Les couleurs exactes attribuées aux différentes pièces restent à définir.
+
+La direction artistique doit néanmoins rester compatible avec l’univers rouge et vert du projet.
+
+---
+
+# 13. PLATEAU
+
+Le plateau est une grille 2D.
+
+Le rendu graphique peut donner une impression de profondeur, mais les coordonnées de jeu restent sur deux axes.
+
+Les dimensions exactes de la grille doivent encore être confirmées.
+
+Hypothèse actuellement recommandée :
+
+**format classique 10 colonnes × 20 lignes visibles.**
+
+Cette valeur n’est pas encore considérée comme une décision définitive.
+
+---
+
+# 14. ACTIONS DU JOUEUR
+
+Le joueur doit pouvoir :
+
+- déplacer une pièce vers la gauche ;
+- déplacer une pièce vers la droite ;
+- faire tourner une pièce ;
+- accélérer sa descente ;
+- effectuer une chute instantanée ;
+- mettre le jeu en pause ;
+- reprendre la partie.
+
+---
+
+# 15. COMMANDES PC
+
+Le schéma proposé est :
+
+- flèche gauche : déplacement gauche ;
+- flèche droite : déplacement droite ;
+- flèche bas : descente accélérée ;
+- flèche haut ou touche dédiée : rotation ;
+- barre espace : chute instantanée ;
+- Échap : pause.
+
+Les touches définitives devront être confirmées au moment de la spécification finale.
+
+---
+
+# 16. COMMANDES MOBILE
+
+La version mobile doit utiliser des interactions tactiles simples.
+
+Le fonctionnement proposé est :
+
+- glissement gauche : déplacement à gauche ;
+- glissement droite : déplacement à droite ;
+- tap : rotation ;
+- glissement vers le bas : descente accélérée ;
+- commande spécifique pour la chute instantanée.
+
+La chute instantanée pourra être déclenchée :
+
+- par un geste dédié ;
+- ou par un bouton visible.
+
+Cette décision reste à préciser lors du travail UX.
+
+---
+
+# 17. RENDU 3D
+
+Le jeu reste mécaniquement en 2D.
+
+La 3D doit être utilisée pour améliorer :
+
+- l’apparence des blocs ;
+- les éclairages ;
+- les ombres ;
+- les animations ;
+- le décor ;
+- les transitions ;
+- la destruction des lignes.
+
+La caméra doit rester suffisamment stable pour ne jamais gêner la compréhension du plateau.
+
+---
+
+# 18. ÉCRAN D’ACCUEIL
+
+L’écran d’accueil doit présenter au minimum :
+
+- le nom ou logo du jeu ;
+- l’identité graphique marocaine ;
+- un bouton Jouer ;
+- un accès au classement ;
+- le choix de langue FR / EN ;
+- un contrôle du son.
+
+Le joueur ne doit pas avoir besoin de se connecter.
+
+Aucune inscription ne doit apparaître avant le lancement d’une partie.
+
+---
+
+# 19. DÉMARRAGE D’UNE PARTIE
+
+Le parcours doit être extrêmement court.
+
+Parcours attendu :
+
+**Accueil → Jouer → Partie**
+
+Aucune étape obligatoire ne doit exister entre le bouton Jouer et le lancement de la partie.
+
+---
+
+# 20. PARTIE
+
+Pendant la partie, l’interface doit afficher les informations essentielles.
+
+Au minimum :
+
+- plateau ;
+- score ;
+- prochaine pièce ;
+- niveau ou indication de progression ;
+- contrôle de pause.
+
+Sur téléphone, les informations doivent être disposées de manière à ne pas réduire excessivement la taille du plateau.
+
+---
+
+# 21. PROCHAINE PIÈCE
+
+Le joueur doit pouvoir voir la prochaine pièce qui sera utilisée.
+
+Cette fonctionnalité fait partie du P0.
+
+Une file de plusieurs pièces suivantes n’est pas encore validée pour le MVP.
+
+---
+
+# 22. SCORE
+
+Le jeu doit disposer d’un système de score.
+
+Des points sont obtenus principalement en supprimant des lignes.
+
+Le système pourra éventuellement valoriser :
+
+- plusieurs lignes supprimées simultanément ;
+- les combos ;
+- certaines actions avancées.
+
+Cependant, la formule exacte du score n’est pas encore définie.
+
+Elle devra être verrouillée avant la version finale du CDC.
+
+---
+
+# 23. NIVEAUX
+
+La difficulté doit augmenter progressivement.
+
+L’augmentation de difficulté doit principalement passer par l’accélération de la vitesse de chute des pièces.
+
+La courbe exacte de progression reste à spécifier.
+
+---
+
+# 24. GAME OVER
+
+La partie se termine lorsque les conditions classiques de défaite sont atteintes.
+
+À la fin de la partie, l’utilisateur doit voir son score final.
+
+Il doit ensuite pouvoir :
+
+- publier son score ;
+- rejouer ;
+- consulter le classement.
+
+---
+
+# 25. SYSTÈME DE PSEUDO
+
+Aucun compte utilisateur n’est nécessaire.
+
+Le pseudo fonctionne comme sur une borne d’arcade.
+
+Le pseudo est demandé uniquement après la fin de la partie.
+
+Le joueur ne doit pas perdre de temps à saisir un nom avant de commencer à jouer.
+
+Le joueur peut choisir de ne pas publier son score.
+
+---
+
+# 26. RÈGLES DU PSEUDO
+
+Le pseudo :
+
+- n’est pas un compte ;
+- n’est pas un identifiant unique ;
+- peut être utilisé par plusieurs joueurs ;
+- est associé à un score.
+
+Des règles devront être définies sur :
+
+- longueur minimale ;
+- longueur maximale ;
+- caractères autorisés ;
+- mots interdits.
+
+Un filtre minimal doit empêcher l’affichage de pseudos manifestement inappropriés.
+
+---
+
+# 27. CLASSEMENT MONDIAL
+
+Le jeu doit proposer un leaderboard mondial.
+
+Le classement est accessible publiquement.
+
+Une ligne du classement doit au minimum contenir :
+
+- rang ;
+- pseudo ;
+- score.
+
+La date peut également être conservée côté système.
+
+Après publication de son score, le joueur doit pouvoir voir sa position lorsque celle-ci est pertinente.
+
+Exemple :
+
+**#18 — NOVA77 — 12 450 points**
+
+Le nombre exact de positions visibles dans le leaderboard reste à définir.
+
+---
+
+# 28. IDENTIFICATION TECHNIQUE DES PARTIES
+
+Chaque score publié doit pouvoir être rattaché à une partie.
+
+Le système doit donc disposer au minimum d’un identifiant technique de partie.
+
+Le joueur n’a pas besoin de voir cet identifiant.
+
+Il sert notamment à :
+
+- éviter certaines soumissions répétées ;
+- améliorer la traçabilité ;
+- limiter la fraude.
+
+---
+
+# 29. ANTI-TRICHE
+
+Le classement mondial ne doit pas accepter aveuglément n’importe quel score envoyé par le navigateur.
+
+Une validation minimale côté serveur doit être prévue.
+
+Elle doit notamment permettre de détecter ou limiter :
+
+- scores impossibles ;
+- soumissions massives ;
+- requêtes répétitives ;
+- modification triviale de la valeur du score ;
+- abus automatisés.
+
+La stratégie anti-triche complète reste à spécifier.
+
+Le MVP ne nécessite pas un système anti-triche extrêmement complexe, mais un minimum de protection est obligatoire.
+
+---
+
+# 30. ABSENCE DE COMPTE
+
+Le produit ne possède pas de compte utilisateur dans son MVP.
+
+Conséquences acceptées :
+
+- aucune récupération de profil ;
+- aucune connexion ;
+- aucun mot de passe ;
+- aucune synchronisation complète entre appareils ;
+- aucune propriété garantie d’un pseudo ;
+- plusieurs joueurs peuvent choisir exactement le même pseudo.
+
+Cette simplicité est volontaire.
+
+Elle correspond au concept de borne d’arcade mondiale.
+
+---
+
+# 31. SCORE LOCAL
+
+Un meilleur score local peut être conservé sur l’appareil.
+
+Cette fonctionnalité est actuellement classée en P1.
+
+Elle n’est pas obligatoire pour permettre le fonctionnement principal du leaderboard mondial.
+
+---
+
+# 32. AUDIO
+
+Le jeu ne doit avoir aucune musique dans le MVP.
+
+Seuls des effets sonores sont prévus.
+
+Les effets sonores doivent notamment couvrir :
+
+- déplacement ;
+- rotation ;
+- pose d’une pièce ;
+- chute instantanée ;
+- ligne supprimée ;
+- combo éventuel ;
+- montée de niveau ;
+- game over ;
+- boutons de l’interface.
+
+L’utilisateur doit pouvoir couper les sons.
+
+Un réglage de volume pourra éventuellement être proposé.
+
+---
+
+# 33. MUSIQUE
+
+La musique est explicitement hors périmètre du MVP.
+
+Aucune bande-son musicale n’est requise.
+
+---
+
+# 34. RESPONSIVE DESIGN
+
+L’interface doit fonctionner correctement sur différents formats d’écran.
+
+## Priorité 1
+
+Smartphone en mode portrait.
+
+## Priorité 2
+
+Ordinateur.
+
+L’interface ne doit pas simplement être une version PC réduite.
+
+Elle doit être adaptée aux contraintes tactiles et à l’espace disponible.
+
+---
+
+# 35. MODE SOLO
+
+Le MVP est exclusivement solo.
+
+Il n’inclut pas :
+
+- versus temps réel ;
+- parties multijoueurs ;
+- coopération ;
+- matchmaking ;
+- salons ;
+- invitations.
+
+La compétition passe uniquement par le classement mondial.
+
+---
+
+# 36. MONÉTISATION MVP
+
+Le jeu est entièrement gratuit.
+
+Le MVP ne contient :
+
+- aucun paiement ;
+- aucune publicité ;
+- aucun abonnement ;
+- aucun achat intégré.
+
+---
+
+# 37. MONÉTISATION FUTURE
+
+Une monétisation pourra être étudiée ultérieurement.
+
+Le principe privilégié est :
+
+**paiement contre personnalisation, jamais contre avantage de gameplay.**
+
+Les futurs achats possibles pourraient concerner :
+
+- avatars ;
+- décors ;
+- skins ;
+- blocs ;
+- thèmes ;
+- effets visuels ;
+- collections cosmétiques.
+
+Exemples de décors futurs :
+
+- désert marocain ;
+- médina ;
+- architecture traditionnelle ;
+- coucher de soleil ;
+- mosaïque ;
+- zellige ;
+- environnement nocturne ;
+- variantes modernes inspirées du Maroc.
+
+---
+
+# 38. ÉQUITÉ DU CLASSEMENT
+
+Les achats futurs ne doivent pas permettre :
+
+- de ralentir le jeu ;
+- d’obtenir davantage de points ;
+- de modifier les règles ;
+- d’obtenir de meilleures pièces ;
+- d’acquérir une aide inaccessible gratuitement.
+
+Le classement doit rester basé uniquement sur les performances du joueur.
+
+---
+
+# 39. P0 — MVP OBLIGATOIRE
+
+Le P0 comprend :
+
+- jeu accessible depuis le Web ;
+- compatibilité PC ;
+- compatibilité smartphone ;
+- priorité portrait sur mobile ;
+- français ;
+- anglais ;
+- écran d’accueil ;
+- bouton Jouer ;
+- partie immédiate ;
+- gameplay Tetris 2D ;
+- sept formes classiques ;
+- déplacement gauche/droite ;
+- rotation ;
+- descente accélérée ;
+- chute instantanée ;
+- collisions ;
+- empilement ;
+- détection des lignes complètes ;
+- suppression des lignes ;
+- score ;
+- progression de difficulté ;
+- prochaine pièce ;
+- pause ;
+- reprise ;
+- game over ;
+- rendu graphique 3D ;
+- direction artistique Maroc ;
+- palette rouge et verte ;
+- effets sonores ;
+- contrôle son on/off ;
+- saisie du pseudo après la partie ;
+- envoi du score ;
+- leaderboard mondial ;
+- affichage des scores ;
+- anti-triche minimal ;
+- filtrage basique des pseudos ;
+- bouton Rejouer ;
+- bouton Classement.
+
+---
+
+# 40. P1 — APRÈS MVP
+
+Les fonctionnalités P1 prévues ou envisagées sont :
+
+- classement quotidien ;
+- classement hebdomadaire ;
+- meilleur score local ;
+- haptique sur smartphone ;
+- effets 3D supplémentaires ;
+- animations supplémentaires ;
+- plusieurs décors marocains ;
+- davantage de personnalisation visuelle ;
+- partage d’un score ;
+- amélioration du système de combos.
+
+---
+
+# 41. P2 — ÉVOLUTION FUTURE
+
+Fonctionnalités P2 potentielles :
+
+- avatars ;
+- skins de blocs ;
+- thèmes visuels ;
+- décors premium ;
+- collections cosmétiques ;
+- challenges quotidiens ;
+- saisons ;
+- succès ;
+- classement par pays ;
+- fonctionnalités sociales ;
+- système de paiement ;
+- boutique de personnalisation.
+
+---
+
+# 42. HORS PÉRIMÈTRE DU MVP
+
+Sont explicitement hors périmètre :
+
+- Google Play ;
+- App Store ;
+- musique ;
+- multijoueur ;
+- compte utilisateur ;
+- connexion ;
+- mot de passe ;
+- chat ;
+- profil social ;
+- paiement ;
+- publicité ;
+- achats intégrés ;
+- avatars payants ;
+- skins payants ;
+- saisons ;
+- battle pass ;
+- monde 3D jouable ;
+- déplacement des pièces en profondeur.
+
+---
+
+# 43. PARCOURS UTILISATEUR PRINCIPAL
+
+Le parcours principal est :
+
+**Accueil**
+
+↓  
+
+**Choix éventuel FR / EN**
+
+↓  
+
+**Jouer**
+
+↓  
+
+**Partie**
+
+↓  
+
+**Game Over**
+
+↓  
+
+**Score final**
+
+↓  
+
+**Saisie facultative du pseudo**
+
+↓  
+
+**Envoyer le score**
+
+↓  
+
+**Classement mondial**
+
+↓  
+
+**Rejouer**
+
+---
+
+# 44. PARCOURS ALTERNATIF
+
+Depuis l’accueil :
+
+**Accueil → Classement**
+
+Le joueur doit pouvoir consulter les meilleurs scores sans devoir effectuer une partie.
+
+---
+
+# 45. RÈGLES MÉTIER CRITIQUES
+
+1. Une partie peut être jouée sans compte.
+
+2. Le pseudo n’est demandé qu’après une partie.
+
+3. Le joueur peut refuser de publier son score.
+
+4. Deux personnes peuvent utiliser le même pseudo.
+
+5. Le pseudo n’identifie pas juridiquement ou techniquement un utilisateur unique.
+
+6. Le classement est mondial.
+
+7. Le jeu est gratuit dans le MVP.
+
+8. La compétition ne donne aucun avantage aux joueurs payants si une monétisation est introduite ultérieurement.
+
+9. Le serveur doit contrôler les soumissions de score.
+
+10. Les pseudos publics doivent être filtrés.
+
+---
+
+# 46. DONNÉES COLLECTÉES
+
+Le MVP doit minimiser les données collectées.
+
+Les données nécessaires au fonctionnement du classement pourraient comprendre :
+
+- pseudo ;
+- score ;
+- date et heure du score ;
+- identifiant technique de partie.
+
+Certaines données techniques peuvent être générées temporairement pour :
+
+- sécurité ;
+- anti-spam ;
+- anti-fraude ;
+- fonctionnement du service.
+
+Le détail exact devra être défini avant publication.
+
+---
+
+# 47. DONNÉES NON NÉCESSAIRES
+
+Le MVP ne nécessite pas directement :
+
+- nom réel ;
+- prénom ;
+- adresse ;
+- téléphone ;
+- date de naissance ;
+- photo ;
+- carte bancaire ;
+- mot de passe.
+
+Ces données ne doivent pas être collectées sans nécessité future explicite.
+
+---
+
+# 48. RGPD
+
+Puisqu’un leaderboard en ligne implique la collecte et la publication d’un pseudo ainsi que des données techniques, les obligations de confidentialité doivent être considérées avant publication.
+
+Le produit devra au minimum prévoir :
+
+- minimisation des données ;
+- définition des finalités ;
+- durée de conservation ;
+- traitement des demandes de suppression lorsque applicable ;
+- information claire de l’utilisateur ;
+- gestion des données techniques nécessaires au fonctionnement et à la sécurité.
+
+La politique exacte de confidentialité reste à finaliser avant publication.
+
+---
+
+# 49. SÉCURITÉ
+
+Le MVP doit prévoir au minimum :
+
+- limitation des requêtes ;
+- protection contre le spam ;
+- validation des entrées utilisateur ;
+- filtrage des pseudos ;
+- protection de l’API de score ;
+- secrets conservés côté serveur ;
+- journaux sans données personnelles inutiles ;
+- vérifications contre des abus évidents du leaderboard.
+
+---
+
+# 50. MODÉRATION
+
+Comme les pseudos apparaissent publiquement, une modération minimale est nécessaire.
+
+Elle peut comprendre :
+
+- liste de termes interdits ;
+- limitation de certains caractères ;
+- possibilité administrative de supprimer une entrée ;
+- possibilité de retirer un score frauduleux ou abusif.
+
+Une interface d’administration complète n’est pas nécessairement obligatoire pour le MVP.
+
+Une capacité minimale de suppression doit cependant exister.
+
+---
+
+# 51. ACCESSIBILITÉ
+
+Le jeu doit rester lisible même si l’utilisateur distingue mal le rouge et le vert.
+
+La différenciation des éléments importants ne doit donc pas dépendre uniquement de la couleur.
+
+Les boutons tactiles ou zones interactives doivent être suffisamment grands pour une utilisation confortable sur smartphone.
+
+Le texte doit garder un contraste suffisant avec son arrière-plan.
+
+---
+
+# 52. PERFORMANCE
+
+Le jeu doit rester fluide sur un smartphone récent standard et sur un ordinateur standard.
+
+La 3D ne doit pas provoquer une dégradation de performance susceptible de gêner le gameplay.
+
+Les effets visuels doivent rester secondaires face à la fluidité.
+
+---
+
+# 53. CAMÉRA
+
+La caméra doit rester stable pendant le gameplay principal.
+
+Les effets de caméra peuvent exister mais doivent rester légers.
+
+Ils ne doivent jamais empêcher le joueur de comprendre :
+
+- la position d’une pièce ;
+- la grille ;
+- les collisions ;
+- les espaces libres.
+
+---
+
+# 54. EFFETS VISUELS
+
+Les effets visuels peuvent accompagner :
+
+- suppression d’une ligne ;
+- plusieurs lignes simultanées ;
+- changement de niveau ;
+- game over ;
+- nouveau record.
+
+Cependant, les effets ne doivent pas ralentir ou masquer le jeu.
+
+---
+
+# 55. KPIs DE SUCCÈS
+
+Les KPIs définitifs ne sont pas encore validés.
+
+Les métriques pertinentes envisagées sont :
+
+- nombre de parties lancées ;
+- nombre de parties terminées ;
+- nombre de scores publiés ;
+- taux de publication des scores ;
+- nombre de joueurs revenant jouer ;
+- nombre moyen de parties par session ;
+- score moyen ;
+- durée moyenne d’une partie ;
+- utilisation mobile vs PC.
+
+Aucun objectif chiffré n’a encore été défini.
+
+---
+
+# 56. CRITÈRES D’ACCEPTATION GLOBAUX
+
+Le MVP est considéré comme fonctionnel lorsque :
+
+- un utilisateur peut ouvrir le jeu depuis son navigateur ;
+- le jeu fonctionne sur smartphone et PC ;
+- le smartphone peut jouer correctement en portrait ;
+- le joueur peut lancer une partie sans compte ;
+- les pièces descendent correctement ;
+- les déplacements fonctionnent ;
+- les rotations fonctionnent ;
+- les collisions sont cohérentes ;
+- les lignes complètes sont supprimées ;
+- le score évolue ;
+- la difficulté augmente ;
+- la partie se termine correctement ;
+- le score final est affiché ;
+- un pseudo peut être saisi ;
+- le score peut être publié ;
+- le score apparaît correctement dans le classement ;
+- les scores manifestement invalides ne sont pas acceptés sans contrôle ;
+- le joueur peut rejouer immédiatement ;
+- le français et l’anglais sont disponibles ;
+- les sons peuvent être coupés ;
+- aucune musique n’est présente ;
+- aucune création de compte n’est requise.
+
+---
+
+# 57. RISQUE 1 — TRICHE
+
+## Risque
+
+Un utilisateur peut tenter d’envoyer directement un score artificiellement élevé.
+
+## Impact
+
+Le classement perd sa crédibilité.
+
+## Mitigation
+
+- validation serveur ;
+- contrôle de cohérence ;
+- identifiant de partie ;
+- limitation des requêtes ;
+- détection des valeurs absurdes ;
+- suppression administrative des scores frauduleux.
+
+---
+
+# 58. RISQUE 2 — CONTRÔLES MOBILES
+
+## Risque
+
+Les commandes tactiles peuvent être moins précises qu’un clavier.
+
+## Impact
+
+Frustration du joueur.
+
+## Mitigation
+
+- gestes simples ;
+- zones tactiles généreuses ;
+- feedback immédiat ;
+- tests sur plusieurs tailles de téléphone ;
+- optimisation spécifique du mode portrait.
+
+---
+
+# 59. RISQUE 3 — IDENTITÉ ROUGE/VERT
+
+## Risque
+
+Un design utilisant excessivement le rouge et le vert peut réduire la lisibilité.
+
+## Mitigation
+
+Utiliser également :
+
+- formes ;
+- relief ;
+- contraste ;
+- valeurs de luminosité ;
+- contours.
+
+---
+
+# 60. RISQUE 4 — SURCHARGE VISUELLE
+
+## Risque
+
+Les motifs marocains et la 3D peuvent rendre l’écran trop chargé.
+
+## Mitigation
+
+Le plateau reste prioritaire.
+
+L’identité culturelle doit principalement apparaître dans :
+
+- décor ;
+- arrière-plan ;
+- logo ;
+- interface ;
+- animations périphériques.
+
+---
+
+# 61. RISQUE 5 — SCOPE CREEP
+
+## Risque
+
+Ajouter trop tôt :
+
+- avatars ;
+- paiement ;
+- nombreux décors ;
+- multijoueur ;
+- boutique ;
+- skins.
+
+## Mitigation
+
+Toutes ces fonctionnalités restent hors du P0.
+
+La priorité absolue est :
+
+**jouer → faire un score → publier son pseudo → apparaître au classement → rejouer.**
+
+---
+
+# 62. HYPOTHÈSES
+
+## Hypothèse 1
+
+Le format Web sera suffisant pour toucher à la fois les joueurs PC et téléphone.
+
+**Confiance : élevée**
+
+**Validation :**
+tests sur plusieurs navigateurs et appareils.
+
+---
+
+## Hypothèse 2
+
+Le concept de leaderboard sans compte suffit à créer une motivation de compétition.
+
+**Confiance : moyenne à élevée**
+
+**Validation :**
+mesurer le taux de publication de scores et le taux de retour des joueurs.
+
+---
+
+## Hypothèse 3
+
+L’identité marocaine sera un élément différenciant positif.
+
+**Confiance : moyenne**
+
+**Validation :**
+tests utilisateurs et observation des retours.
+
+---
+
+## Hypothèse 4
+
+L’absence de musique ne réduit pas significativement l’expérience.
+
+Cette décision vient directement du choix produit actuel.
+
+**Validation :**
+retours utilisateurs après publication.
+
+---
+
+# 63. DÉCISIONS STRUCTURANTES
+
+## Décision
+
+Gameplay en 2D.
+
+**Justification :**
+préserver la simplicité et la lisibilité.
+
+**Alternative écartée :**
+véritable Tetris en trois dimensions.
+
+---
+
+## Décision
+
+Rendu graphique 3D.
+
+**Justification :**
+moderniser l’apparence sans compliquer les règles.
+
+---
+
+## Décision
+
+Web uniquement pour le lancement.
+
+**Justification :**
+éviter les contraintes Google Play et App Store.
+
+---
+
+## Décision
+
+Aucun compte utilisateur.
+
+**Justification :**
+expérience arcade immédiate.
+
+---
+
+## Décision
+
+Pseudo saisi après la partie.
+
+**Justification :**
+aucune friction avant de jouer.
+
+---
+
+## Décision
+
+Classement mondial.
+
+**Justification :**
+créer une compétition simple entre joueurs.
+
+---
+
+## Décision
+
+Français et anglais.
+
+**Alternative écartée pour le MVP :**
+arabe.
+
+---
+
+## Décision
+
+Téléphone prioritairement en portrait.
+
+**Justification :**
+cohérence naturelle avec le format Tetris.
+
+---
+
+## Décision
+
+Aucune musique.
+
+**Justification :**
+choix produit.
+
+---
+
+## Décision
+
+Jeu gratuit au lancement.
+
+**Justification :**
+aucune monétisation nécessaire pour valider le produit.
+
+---
+
+## Décision
+
+Monétisation éventuelle uniquement cosmétique.
+
+**Justification :**
+conserver l’équité du leaderboard.
+
+---
+
+# 64. POINTS ENCORE À VERROUILLER
+
+Avant CDC vFinal, les sujets suivants doivent être spécifiés précisément :
+
+1. nom définitif du jeu ;
+2. dimensions définitives du plateau ;
+3. système exact de rotation ;
+4. comportement des rotations près des murs ;
+5. formule exacte du score ;
+6. règles de combos ;
+7. courbe exacte de vitesse ;
+8. règles de génération des pièces ;
+9. nombre de prochaines pièces affichées ;
+10. fonctionnement précis de la chute instantanée mobile ;
+11. taille minimale et maximale des pseudos ;
+12. caractères autorisés ;
+13. politique exacte de filtrage des pseudos ;
+14. nombre d’entrées visibles dans le leaderboard ;
+15. règles d’égalité entre deux scores ;
+16. conservation des scores ;
+17. architecture précise de validation anti-triche ;
+18. conditions exactes de suppression/modération d’un score.
+
+---
+
+# 65. HANDOFF NOVA SQUAD — ÉTAT ACTUEL
+
+## Résumé exécutif
+
+Construire un jeu de type Tetris, jouable gratuitement depuis un navigateur sur PC et téléphone.
+
+La logique du jeu reste en 2D mais le rendu graphique est en 3D.
+
+L’identité visuelle doit s’inspirer fortement du Maroc, principalement avec les couleurs rouge et verte.
+
+Le téléphone est prioritairement utilisé en portrait.
+
+Le produit est solo.
+
+Il ne possède ni compte utilisateur ni authentification.
+
+Après une partie, le joueur peut saisir un pseudo et publier son score sur un classement mondial.
+
+Aucune musique n’est prévue.
+
+Des effets sonores sont nécessaires.
+
+Le MVP ne possède ni publicité ni paiement.
+
+La future monétisation éventuelle doit être cosmétique uniquement.
+
+---
+
+# 66. BOUCLE PRINCIPALE DU MVP
+
+La boucle centrale à préserver coûte que coûte est :
+
+**Ouvrir le jeu**
+
+→ **Jouer immédiatement**
+
+→ **Faire le meilleur score possible**
+
+→ **Game Over**
+
+→ **Saisir un pseudo**
+
+→ **Publier le score**
+
+→ **Voir son classement**
+
+→ **Rejouer**
+
+Toute fonctionnalité ne servant pas directement cette boucle doit être considérée comme secondaire jusqu’à preuve du contraire.
+
+---
+
+# 67. ÉTAT FINAL DU CDC SNAPSHOT
+
+**Projet :** jeu de type Tetris 3D visuel avec identité Maroc.
+
+**Cible :** joueurs casual PC et smartphone.
+
+**Proposition de valeur :** expérience arcade immédiate, visuellement marocaine, avec compétition mondiale sans inscription.
+
+**MVP :** solo + score + leaderboard + pseudo arcade + rendu 3D.
+
+**P0 :** gameplay complet, PC/mobile, FR/EN, sons, leaderboard.
+
+**P1 :** classements temporels, haptique, meilleurs scores locaux, nouveaux décors.
+
+**P2 :** personnalisation, avatars, skins, monétisation cosmétique.
+
+**Plateformes :** navigateur PC et smartphone.
+
+**Téléphone :** portrait prioritaire.
+
+**Paiement :** aucun en MVP.
+
+**Données personnelles :** minimales, essentiellement liées au pseudo public et au fonctionnement du classement.
+
+**Pays :** diffusion potentiellement mondiale.
+
+**Langues :** français et anglais.
+
+**Contraintes majeures :**
+- lisibilité mobile ;
+- fluidité 3D ;
+- leaderboard crédible ;
+- anti-triche minimum ;
+- modération des pseudos ;
+- identité marocaine sans surcharge.
+
+**Version CDC :** v0.3.
+
+---
+
+# CONCLUSION
+
+Le produit défini aujourd’hui est donc un **jeu de blocs arcade gratuit, mondial et immédiatement accessible depuis le Web**, reprenant les mécaniques essentielles du Tetris classique tout en utilisant une **présentation 3D moderne et une identité visuelle marocaine rouge et verte**.
+
+Le joueur n’a aucun compte à créer.
+
+Il arrive, joue, réalise son score, entre éventuellement son pseudo, apparaît dans le classement mondial et peut recommencer immédiatement.
+
+Le MVP doit rester concentré sur cette boucle.
+
+La personnalisation, les avatars, les décors premium et les paiements sont volontairement repoussés après validation du jeu principal.
+
+C’est **l’intégralité du CDC tel qu’il existe actuellement**. Les éléments listés dans la section **« Points encore à verrouiller »** sont les seuls gros sujets qui empêchent encore de le qualifier de **CDC vFinal prêt pour build**.
