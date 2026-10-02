@@ -99,13 +99,15 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
                   row.map((cell, cIdx) => (
                     <div
                       key={`${rIdx}-${cIdx}`}
-                      className={`w-3 h-3 rounded-[2px] ${
+                      className={`w-3.5 h-3.5 rounded-[3px] ${
                         cell !== 0
-                          ? 'border border-black/30 shadow-sm'
+                          ? 'shadow-sm'
                           : 'bg-transparent'
                       }`}
                       style={{
                         backgroundColor: cell !== 0 ? nextDef.color : 'transparent',
+                        boxShadow: cell !== 0 ? `0 0 8px ${nextDef.color}88` : 'none',
+                        border: cell !== 0 ? `1px solid ${nextDef.highlightColor}` : 'none',
                       }}
                     />
                   ))

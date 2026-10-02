@@ -252,7 +252,7 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
       roughness: 0.85,
       metalness: 0.15,
       transparent: true,
-      opacity: 0.88,
+      opacity: 0.96,
     });
     backPlaneMatRef.current = backPlaneMat;
     const backPlane = new THREE.Mesh(backPlaneGeo, backPlaneMat);
@@ -652,8 +652,10 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
           if (!mat) {
             mat = new THREE.MeshStandardMaterial({
               color: new THREE.Color(cell.color),
+              emissive: new THREE.Color(cell.color),
+              emissiveIntensity: 0.22,
               roughness: 0.25,
-              metalness: 0.2,
+              metalness: 0.15,
             });
             materialCache.set(cell.color, mat);
           }
@@ -691,10 +693,10 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
 
     const activeMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(def.color),
-      emissive: new THREE.Color(def.highlightColor),
-      emissiveIntensity: 0.2,
-      roughness: 0.2,
-      metalness: 0.25,
+      emissive: new THREE.Color(def.color),
+      emissiveIntensity: 0.35,
+      roughness: 0.22,
+      metalness: 0.15,
     });
 
     for (let r = 0; r < shape.length; r++) {
