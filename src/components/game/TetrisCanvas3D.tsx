@@ -171,6 +171,7 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
   const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
   const pointLight1Ref = useRef<THREE.PointLight | null>(null);
   const pointLight2Ref = useRef<THREE.PointLight | null>(null);
+  const activePieceLightRef = useRef<THREE.PointLight | null>(null);
   const backPlaneMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const borderMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const gridLinesMatRef = useRef<THREE.LineBasicMaterial | null>(null);
@@ -228,6 +229,12 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     pointLight2.position.set(...cfg.pointLight2.position);
     scene.add(pointLight2);
     pointLight2Ref.current = pointLight2;
+
+    // Dynamic light tracking the active falling piece
+    const activePieceLight = new THREE.PointLight(0xffffff, 0, 14);
+    activePieceLight.position.set(0, 0, 1.8);
+    scene.add(activePieceLight);
+    activePieceLightRef.current = activePieceLight;
 
     // Shared geometry for blocks
     const blockSize = 0.94;
@@ -309,6 +316,38 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     const topBorder = new THREE.Mesh(topBorderGeo, borderMat);
     topBorder.position.set(0, halfH + 0.15, 0);
     frameGroup.add(topBorder);
+
+    // 4 Moroccan Ornate Golden Corner Brackets (Cornières impériales ciselées)
+    const cornerMat = new THREE.MeshStandardMaterial({
+      color: 0xffd700,
+      metalness: 0.85,
+      roughness: 0.22,
+    });
+    const cornerHGeo = new THREE.BoxGeometry(1.2, 0.34, 0.95);
+    const cornerVGeo = new THREE.BoxGeometry(0.34, 1.2, 0.95);
+    const studGeo = new THREE.ConeGeometry(0.18, 0.22, 4); // 4-sided diamond pyramid stud
+
+    const corners = [
+      { x: -halfW - 0.15, y: -halfH - 0.15, signX: 1, signY: 1 },
+      { x: halfW + 0.15, y: -halfH - 0.15, signX: -1, signY: 1 },
+      { x: -halfW - 0.15, y: halfH + 0.15, signX: 1, signY: -1 },
+      { x: halfW + 0.15, y: halfH + 0.15, signX: -1, signY: -1 },
+    ];
+
+    corners.forEach((c) => {
+      const hMesh = new THREE.Mesh(cornerHGeo, cornerMat);
+      hMesh.position.set(c.x + c.signX * 0.45, c.y, 0.05);
+      frameGroup.add(hMesh);
+
+      const vMesh = new THREE.Mesh(cornerVGeo, cornerMat);
+      vMesh.position.set(c.x, c.y + c.signY * 0.45, 0.05);
+      frameGroup.add(vMesh);
+
+      const stud = new THREE.Mesh(studGeo, cornerMat);
+      stud.rotation.z = Math.PI / 4;
+      stud.position.set(c.x, c.y, 0.52);
+      frameGroup.add(stud);
+    });
 
     scene.add(frameGroup);
 
@@ -722,6 +761,20 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
             }
           }
         }
+      }
+    }
+
+    // Dynamic soft light tracking the active piece
+    const pLight = activePieceLightRef.current;
+    if (pLight) {
+      if (activePiece) {
+        const [lx, ly] = gridToThreePos(activePiece.x + 1, activePiece.y + 1);
+        pLight.position.set(lx, ly, 1.8);
+        pLight.color.set(new THREE.Color(def.color));
+        pLight.intensity = 1.4;
+        pLight.visible = true;
+      } else {
+        pLight.visible = false;
       }
     }
   }, [activePiece, ghostPos]);

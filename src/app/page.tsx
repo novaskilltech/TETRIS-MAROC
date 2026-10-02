@@ -311,7 +311,7 @@ export default function TetrisMarocApp() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-between text-white selection:bg-morocco-gold selection:text-black">
+    <main className="min-h-screen flex flex-col items-center justify-between text-white selection:bg-morocco-gold selection:text-black zellij-pattern">
       {/* ================= HOME SCREEN ================= */}
       {screen === 'home' && (
         <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-md mx-auto text-center animate-fade-in">
@@ -404,25 +404,29 @@ export default function TetrisMarocApp() {
       {/* ================= GAMEPLAY SCREEN ================= */}
       {screen === 'game' && (
         <div className="w-full flex-1 flex flex-col max-w-md mx-auto h-full px-2 py-2 justify-between">
-          {/* Top Bar with Live Theme Selector */}
-          <div className="flex items-center justify-between px-2 py-1 mb-1">
+          {/* Top Bar with Live Theme Selector & Moorish Accents */}
+          <div className="flex items-center justify-between px-2 py-1.5 mb-1 bg-morocco-night/80 backdrop-blur-md rounded-2xl border border-morocco-gold/30 shadow-md">
             <button
               onClick={() => setScreen('home')}
-              className="p-1.5 rounded-lg bg-morocco-card border border-morocco-border text-gray-300 hover:text-white"
+              className="p-1.5 rounded-xl bg-morocco-card border border-morocco-border text-gray-300 hover:text-white hover:border-morocco-gold/50 transition-all active:scale-95"
               title={t.quit}
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
 
             {/* Live Theme Switcher */}
-            <ThemeSelector currentTheme={themeId} onSelectTheme={handleSelectTheme} t={t} compact />
+            <div className="flex items-center gap-1">
+              <span className="w-1 h-1 rotate-45 bg-morocco-gold"></span>
+              <ThemeSelector currentTheme={themeId} onSelectTheme={handleSelectTheme} t={t} compact />
+              <span className="w-1 h-1 rotate-45 bg-morocco-gold"></span>
+            </div>
 
             <div className="flex items-center gap-1.5">
               <button
                 onClick={toggleSound}
-                className="p-1.5 rounded-lg bg-morocco-card border border-morocco-border text-gray-300"
+                className="p-1.5 rounded-xl bg-morocco-card border border-morocco-border text-gray-300 hover:text-white transition-all active:scale-95"
               >
-                {isMuted ? <VolumeX className="w-3.5 h-3.5 text-morocco-red" /> : <Volume2 className="w-3.5 h-3.5 text-morocco-green" />}
+                {isMuted ? <VolumeX className="w-4 h-4 text-morocco-red-light" /> : <Volume2 className="w-4 h-4 text-morocco-green-light" />}
               </button>
             </div>
           </div>
@@ -460,16 +464,29 @@ export default function TetrisMarocApp() {
                 themeId={themeId}
               />
 
-              {/* Mobile overlay HUD badge (score & next piece) */}
-              <div className="md:hidden absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-                <div className="px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/30 shadow-lg">
-                  <div className="text-[9px] text-gray-300 font-bold uppercase">{t.score}</div>
-                  <div className="text-base font-black font-mono text-white">{stats.score.toLocaleString()}</div>
+              {/* Mobile overlay HUD badge (Stitch Cyber-Zellij In-Game Intel) */}
+              <div className="md:hidden absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none z-20">
+                {/* Score badge with gold glow */}
+                <div className="px-2.5 py-1 rounded-xl bg-morocco-night/90 backdrop-blur-md border border-morocco-gold/50 shadow-[0_0_12px_rgba(212,175,55,0.25)] flex flex-col">
+                  <span className="text-[8px] text-morocco-gold font-mono font-bold uppercase tracking-wider">{t.score}</span>
+                  <span className="text-sm font-black font-mono text-morocco-gold drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]">
+                    {stats.score.toLocaleString()}
+                  </span>
                 </div>
 
-                <div className="px-3 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/30 shadow-lg flex items-center gap-2">
-                  <div className="text-[9px] text-gray-300 font-bold uppercase">{t.nextPiece}</div>
-                  <div className="text-xs font-black font-mono text-white">{nextPiece}</div>
+                {/* Level & Lines pill */}
+                <div className="px-2.5 py-1 rounded-full bg-morocco-night/90 backdrop-blur-md border border-morocco-border text-[10px] font-mono font-bold text-gray-300 flex items-center gap-1.5 shadow-md">
+                  <span className="text-morocco-green-light font-black">LVL {stats.level}</span>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-morocco-red-light font-black">{stats.lines} L</span>
+                </div>
+
+                {/* Next Piece badge */}
+                <div className="px-2.5 py-1 rounded-xl bg-morocco-night/90 backdrop-blur-md border border-morocco-gold/50 shadow-md flex items-center gap-1.5">
+                  <span className="text-[8px] text-gray-300 font-mono font-bold uppercase">{t.nextPiece}</span>
+                  <div className="w-5 h-5 rounded-md bg-morocco-card border border-morocco-gold/40 flex items-center justify-center font-mono font-black text-xs text-morocco-gold shadow-sm">
+                    {nextPiece}
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #070a0f;
+  --background: #050b14;
   --foreground: #ededed;
 }
 
@@ -16,12 +16,57 @@ body {
   -webkit-touch-callout: none;
 }
 
+/* Moroccan Zellij Star Lattice Overlay (Stitch Cyber-Zellij Design System) */
+.zellij-pattern {
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.08) 1.5px, transparent 1.5px),
+    linear-gradient(45deg, rgba(89, 223, 137, 0.03) 25%, transparent 25%, transparent 75%, rgba(89, 223, 137, 0.03) 75%),
+    linear-gradient(-45deg, rgba(89, 223, 137, 0.03) 25%, transparent 25%, transparent 75%, rgba(89, 223, 137, 0.03) 75%);
+  background-size: 24px 24px, 48px 48px, 48px 48px;
+}
+
+/* Moorish Horseshoe Arch Silhouette Shape */
+.arch-header {
+  clip-path: polygon(0% 100%, 0% 25%, 15% 10%, 35% 0%, 50% 0%, 65% 0%, 85% 10%, 100% 25%, 100% 100%);
+}
+
+/* Arcade Neon Glow Effects */
+.neon-gold-glow {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.35), inset 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.neon-emerald-glow {
+  box-shadow: 0 0 16px rgba(0, 168, 89, 0.4), inset 0 0 6px rgba(89, 223, 137, 0.25);
+}
+
+.neon-cyan-glow {
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.4), inset 0 0 6px rgba(71, 214, 255, 0.2);
+}
+
+.neon-crimson-glow {
+  box-shadow: 0 0 16px rgba(255, 59, 48, 0.45), inset 0 0 8px rgba(255, 59, 48, 0.25);
+}
+
+/* Subtle CRT Scanline Texture FX */
+.scanline-overlay {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.12),
+    rgba(0, 0, 0, 0.12) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+}
+
 /* Moroccan arcade pattern background */
 .morocco-pattern-bg {
-  background-color: #070a0f;
+  background-color: #050b14;
   background-image: 
-    radial-gradient(circle at 50% 10%, rgba(193, 39, 45, 0.15), transparent 40%),
-    radial-gradient(circle at 50% 90%, rgba(0, 98, 51, 0.15), transparent 40%);
+    radial-gradient(circle at 50% 10%, rgba(193, 39, 45, 0.18), transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(0, 98, 51, 0.18), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.06) 1.5px, transparent 1.5px);
+  background-size: 100% 100%, 100% 100%, 28px 28px;
 }
 
 /* Custom scrollbars */
@@ -29,7 +74,7 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f1722;
+  background: #0a111c;
 }
 ::-webkit-scrollbar-thumb {
   background: #d4af37;
