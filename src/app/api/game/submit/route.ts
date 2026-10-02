@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Record score
-    const entry = addLeaderboardScore({
+    const entry = await addLeaderboardScore({
       pseudo: pseudoCheck.cleanPseudo,
       score: numericScore,
       lines: numericLines,

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { LeaderboardEntry } from '../types/game';
+import type { LeaderboardEntry } from '../types/game.ts';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'leaderboard.json');
 
@@ -20,7 +20,18 @@ const INITIAL_SCORES: LeaderboardEntry[] = [
 
 let inMemoryLeaderboard: LeaderboardEntry[] = [...INITIAL_SCORES];
 
-// Load leaderboard from disk if available
+function getSupabaseConfig() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return {
+    url,
+    key: serviceKey || anonKey,
+    hasConfig: Boolean(url && (serviceKey || anonKey)),
+  };
+}
+
+// Load leaderboard from disk if available (Fallback)
 function loadLeaderboard(): LeaderboardEntry[] {
   try {
     if (fs.existsSync(DATA_FILE)) {
@@ -50,9 +61,55 @@ function saveLeaderboard(entries: LeaderboardEntry[]): void {
   }
 }
 
-export function getLeaderboard(limit = 100): LeaderboardEntry[] {
+export async function getLeaderboard(limit = 100): Promise<LeaderboardEntry[]> {
+  const { url, key, hasConfig } = getSupabaseConfig();
+
+  if (hasConfig && url && key) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(
+        `${url}/rest/v1/tetris_leaderboard?select=id,pseudo,score,lines,level,created_at&order=score.desc,created_at.asc&limit=${limit}`,
+        {
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+          },
+          signal: controller.signal,
+          cache: 'no-store',
+        }
+      );
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const rows = (await res.json()) as Array<{
+          id: string;
+          pseudo: string;
+          score: number;
+          lines: number;
+          level: number;
+          created_at: string;
+        }>;
+
+        if (Array.isArray(rows) && rows.length > 0) {
+          return rows.map((r, index) => ({
+            id: r.id,
+            pseudo: r.pseudo,
+            score: r.score,
+            lines: r.lines,
+            level: r.level,
+            createdAt: r.created_at,
+            rank: index + 1,
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase fetch failed, falling back to local memory cache:', err);
+    }
+  }
+
+  // Fallback to local memory / file
   const all = loadLeaderboard();
-  // Sort descending by score, tie-break by earliest date
   const sorted = [...all].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -64,7 +121,93 @@ export function getLeaderboard(limit = 100): LeaderboardEntry[] {
   }));
 }
 
-export function addLeaderboardScore(entry: Omit<LeaderboardEntry, 'id' | 'rank' | 'createdAt'>): LeaderboardEntry {
+export async function addLeaderboardScore(
+  entry: Omit<LeaderboardEntry, 'id' | 'rank' | 'createdAt'>
+): Promise<LeaderboardEntry> {
+  const { url, key, hasConfig } = getSupabaseConfig();
+
+  if (hasConfig && url && key) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      // 1. Insert row in Supabase
+      const postRes = await fetch(`${url}/rest/v1/tetris_leaderboard`, {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify([
+          {
+            pseudo: entry.pseudo,
+            score: entry.score,
+            lines: entry.lines,
+            level: entry.level,
+          },
+        ]),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (postRes.ok) {
+        const createdRows = (await postRes.json()) as Array<{
+          id: string;
+          pseudo: string;
+          score: number;
+          lines: number;
+          level: number;
+          created_at: string;
+        }>;
+
+        if (Array.isArray(createdRows) && createdRows.length > 0) {
+          const created = createdRows[0];
+
+          // 2. Calculate real rank via count query
+          let rank: number | undefined = undefined;
+          try {
+            const countRes = await fetch(
+              `${url}/rest/v1/tetris_leaderboard?score=gt.${entry.score}`,
+              {
+                headers: {
+                  apikey: key,
+                  Authorization: `Bearer ${key}`,
+                  Prefer: 'count=exact',
+                  'Range-Unit': 'items',
+                  Range: '0-0',
+                },
+              }
+            );
+            if (countRes.ok) {
+              const contentRange = countRes.headers.get('content-range');
+              const totalBetter = contentRange
+                ? parseInt(contentRange.split('/')[1] || '0', 10)
+                : 0;
+              rank = totalBetter + 1;
+            }
+          } catch {
+            // Rank calculation fallback
+          }
+
+          return {
+            id: created.id,
+            pseudo: created.pseudo,
+            score: created.score,
+            lines: created.lines,
+            level: created.level,
+            createdAt: created.created_at,
+            rank,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase insert failed, falling back to local storage:', err);
+    }
+  }
+
+  // Fallback to local memory / file
   const all = loadLeaderboard();
   const newEntry: LeaderboardEntry = {
     ...entry,
@@ -75,7 +218,6 @@ export function addLeaderboardScore(entry: Omit<LeaderboardEntry, 'id' | 'rank' 
   all.push(newEntry);
   all.sort((a, b) => b.score - a.score);
 
-  // Keep top 100
   const top100 = all.slice(0, 100);
   saveLeaderboard(top100);
 
