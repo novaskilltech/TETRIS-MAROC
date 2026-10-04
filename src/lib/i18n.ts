@@ -48,6 +48,13 @@ export interface Translations {
   themeMaroc: string;
   themeGalaxy: string;
   themeBeach: string;
+  themeMarocSub: string;
+  themeGalaxySub: string;
+  themeBeachSub: string;
+  themeBlockTextureLabel: string;
+  themeBlockZellij: string;
+  themeBlockGalaxy: string;
+  themeBlockBeach: string;
 }
 
 export const DICTIONARY: Record<Language, Translations> = {
@@ -95,10 +102,17 @@ export const DICTIONARY: Record<Language, Translations> = {
     noScoresYet: 'Aucun score enregistré pour l\'instant.',
     languageName: 'Français',
     newHighScore: 'NOUVEAU RECORD PERSONNEL !',
-    themeTitle: 'THÈME',
+    themeTitle: 'THÈME VISUEL',
     themeMaroc: 'Maroc Impérial',
     themeGalaxy: 'Galaxie Lunaire',
-    themeBeach: 'Plage Tropicale',
+    themeBeach: 'Plage Atlantique',
+    themeMarocSub: 'Palais & Céramique',
+    themeGalaxySub: 'Cosmos & Étoiles',
+    themeBeachSub: 'Essaouira & Océan',
+    themeBlockTextureLabel: 'Style des Blocs',
+    themeBlockZellij: 'Céramique Zellij',
+    themeBlockGalaxy: 'Cristal Stellaire',
+    themeBlockBeach: 'Verre de Mer & Nacre',
   },
   en: {
     gameTitle: 'TETRIS 3D MOROCCO',
@@ -144,9 +158,16 @@ export const DICTIONARY: Record<Language, Translations> = {
     noScoresYet: 'No scores recorded yet.',
     languageName: 'English',
     newHighScore: 'NEW PERSONAL RECORD!',
-    themeTitle: 'THEME',
+    themeTitle: 'VISUAL THEME',
     themeMaroc: 'Imperial Morocco',
     themeGalaxy: 'Lunar Galaxy',
-    themeBeach: 'Tropical Beach',
+    themeBeach: 'Atlantic Beach',
+    themeMarocSub: 'Palace & Ceramic',
+    themeGalaxySub: 'Cosmos & Stars',
+    themeBeachSub: 'Essaouira & Ocean',
+    themeBlockTextureLabel: 'Block Style',
+    themeBlockZellij: 'Zellij Ceramic',
+    themeBlockGalaxy: 'Stardust Crystal',
+    themeBlockBeach: 'Sea Glass & Nacre',
   },
 };

@@ -1,5 +1,13 @@
 export type ThemeId = 'maroc' | 'galaxy' | 'beach';
 
+export interface BlockStyleConfig {
+  roughness: number;
+  metalness: number;
+  bumpScale: number;
+  emissiveIntensity: number;
+  ghostOpacity: number;
+}
+
 export interface ThemeConfig {
   id: ThemeId;
   nameKey: string;
@@ -29,6 +37,7 @@ export interface ThemeConfig {
   boardBorderColor: number;
   gridLinesColor: number;
   particleColors: number[];
+  blockStyle: BlockStyleConfig;
 }
 
 export const THEMES: Record<ThemeId, ThemeConfig> = {
@@ -46,6 +55,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     boardBorderColor: 0xd4af37,
     gridLinesColor: 0x182433,
     particleColors: [0xfca5a5, 0x86efac, 0xfde047, 0xffffff],
+    blockStyle: {
+      roughness: 0.22,
+      metalness: 0.12,
+      bumpScale: 0.05,
+      emissiveIntensity: 0.22,
+      ghostOpacity: 0.35,
+    },
   },
   galaxy: {
     id: 'galaxy',
@@ -61,6 +77,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     boardBorderColor: 0x93c5fd,
     gridLinesColor: 0x162035,
     particleColors: [0x67e8f9, 0xd8b4fe, 0xfca5a5, 0xffffff],
+    blockStyle: {
+      roughness: 0.14,
+      metalness: 0.42,
+      bumpScale: 0.08,
+      emissiveIntensity: 0.36,
+      ghostOpacity: 0.45,
+    },
   },
   beach: {
     id: 'beach',
@@ -76,5 +99,12 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     boardBorderColor: 0xf59e0b,
     gridLinesColor: 0x0e7490,
     particleColors: [0x0284c7, 0xf59e0b, 0x10b981, 0xffffff],
+    blockStyle: {
+      roughness: 0.32,
+      metalness: 0.06,
+      bumpScale: 0.06,
+      emissiveIntensity: 0.18,
+      ghostOpacity: 0.3,
+    },
   },
 };

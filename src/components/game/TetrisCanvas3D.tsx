@@ -6,6 +6,7 @@ import { Grid, ActivePiece, Position } from '@/types/game';
 import { ThemeId, THEMES } from '@/types/theme';
 import { TETROMINOES } from '@/core/tetrominoes';
 import { GRID_COLS, GRID_ROWS } from '@/core/engine';
+import { getThemeBlockTexture } from '@/core/themeTextures';
 
 interface TetrisCanvas3DProps {
   grid: Grid;
@@ -644,6 +645,9 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     if (gridLinesMatRef.current) {
       gridLinesMatRef.current.color.setHex(cfg.gridLinesColor);
     }
+    if (ghostMatRef.current) {
+      ghostMatRef.current.opacity = cfg.blockStyle.ghostOpacity;
+    }
 
     // Visibility toggles for environmental groups
     if (marocEnvGroupRef.current) {
@@ -664,7 +668,7 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
     return [x, y, 0];
   };
 
-  // Update Settled Blocks
+  // Update Settled Blocks with Themed Procedural Textures
   useEffect(() => {
     const group = blocksGroupRef.current;
     const boxGeo = boxGeoRef.current;
@@ -681,6 +685,8 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
       }
     }
 
+    const cfg = THEMES[themeId];
+    const themeTexture = getThemeBlockTexture(themeId);
     const materialCache = new Map<string, THREE.MeshStandardMaterial>();
 
     for (let r = 0; r < GRID_ROWS; r++) {
@@ -692,9 +698,11 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
             mat = new THREE.MeshStandardMaterial({
               color: new THREE.Color(cell.color),
               emissive: new THREE.Color(cell.color),
-              emissiveIntensity: 0.22,
-              roughness: 0.25,
-              metalness: 0.15,
+              emissiveIntensity: cfg.blockStyle.emissiveIntensity,
+              roughness: cfg.blockStyle.roughness,
+              metalness: cfg.blockStyle.metalness,
+              bumpMap: themeTexture,
+              bumpScale: cfg.blockStyle.bumpScale,
             });
             materialCache.set(cell.color, mat);
           }
@@ -706,9 +714,9 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
         }
       }
     }
-  }, [grid]);
+  }, [grid, themeId]);
 
-  // Update Active Piece & Ghost Piece
+  // Update Active Piece & Ghost Piece with Themed Procedural Textures
   useEffect(() => {
     const activeGroup = activeGroupRef.current;
     const ghostGroup = ghostGroupRef.current;
@@ -729,13 +737,17 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
 
     const def = TETROMINOES[activePiece.type];
     const shape = def.shapes[activePiece.rotation];
+    const cfg = THEMES[themeId];
+    const themeTexture = getThemeBlockTexture(themeId);
 
     const activeMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(def.color),
       emissive: new THREE.Color(def.color),
-      emissiveIntensity: 0.35,
-      roughness: 0.22,
-      metalness: 0.15,
+      emissiveIntensity: cfg.blockStyle.emissiveIntensity * 1.35,
+      roughness: cfg.blockStyle.roughness,
+      metalness: cfg.blockStyle.metalness,
+      bumpMap: themeTexture,
+      bumpScale: cfg.blockStyle.bumpScale * 1.25,
     });
 
     for (let r = 0; r < shape.length; r++) {
@@ -777,7 +789,7 @@ export const TetrisCanvas3D: React.FC<TetrisCanvas3DProps> = ({
         pLight.visible = false;
       }
     }
-  }, [activePiece, ghostPos]);
+  }, [activePiece, ghostPos, themeId]);
 
   // Particle explosion on line clears
   useEffect(() => {

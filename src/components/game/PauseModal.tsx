@@ -37,8 +37,8 @@ export const PauseModal: React.FC<PauseModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-xs rounded-2xl bg-morocco-card border-2 border-morocco-gold/60 p-6 text-white shadow-2xl text-center">
-        <h2 className="text-2xl font-black tracking-widest text-morocco-gold uppercase mb-5">
+      <div className="relative w-full max-w-sm rounded-2xl bg-morocco-card border-2 border-morocco-gold/60 p-5 text-white shadow-2xl text-center">
+        <h2 className="text-2xl font-black tracking-widest text-morocco-gold uppercase mb-4">
           {t.pause}
         </h2>
 

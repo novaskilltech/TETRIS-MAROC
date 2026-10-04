@@ -358,7 +358,7 @@ export default function TetrisMarocApp() {
     <main className="min-h-screen flex flex-col items-center justify-between text-white selection:bg-morocco-gold selection:text-black zellij-pattern">
       {/* ================= HOME SCREEN ================= */}
       {screen === 'home' && (
-        <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-md mx-auto text-center animate-fade-in">
+        <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-lg mx-auto text-center animate-fade-in">
           {/* Header tools */}
           <div className="w-full flex items-center justify-between mb-4">
             <button
