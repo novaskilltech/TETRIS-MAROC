@@ -67,3 +67,15 @@ export interface SubmitScoreResponse {
   entry?: LeaderboardEntry;
   rank?: number;
 }
+
+export interface BonusState {
+  rewindCharges: number;
+  canRewind: boolean;
+  bombUsed: boolean;
+  canTriggerBomb: boolean;
+  bombProgress: {
+    current: number;
+    target: number;
+  };
+}
+

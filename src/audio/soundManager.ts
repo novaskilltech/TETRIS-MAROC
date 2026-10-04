@@ -139,6 +139,36 @@ class SoundManager {
   public playButtonClick(): void {
     this.playTone(600, 'sine', 25, 0.08);
   }
+
+  // Bonus Rewind Sound (Reverse time chime)
+  public playRewind(): void {
+    if (this.muted) return;
+    const reverseChimes = [261.63, 329.63, 392.0, 523.25, 659.25];
+    reverseChimes.forEach((f, i) => {
+      setTimeout(() => {
+        this.playTone(f, 'sine', 90, 0.16, f * 1.15);
+      }, i * 45);
+    });
+  }
+
+  // Bonus Galactic Bomb Sound (Deep sub-bass explosion rumble)
+  public playBombExplosion(): void {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      // 1. Initial thunder strike
+      this.playTone(180, 'sawtooth', 350, 0.35, 45);
+      // 2. Sub-bass shockwave
+      setTimeout(() => {
+        this.playTone(85, 'triangle', 600, 0.4, 25);
+      }, 50);
+      // 3. Cosmic resonance ripple
+      setTimeout(() => {
+        this.playTone(440, 'sine', 400, 0.2, 880);
+      }, 150);
+    } catch (e) {}
+  }
 }
 
 export const soundManager = new SoundManager();

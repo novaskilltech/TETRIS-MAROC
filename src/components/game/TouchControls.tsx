@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, ArrowRight, ArrowDown, RotateCw, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowDown, RotateCw, Zap, Undo2, Bomb } from 'lucide-react';
 
 interface TouchControlsProps {
   onMoveLeft: () => void;
@@ -9,6 +9,13 @@ interface TouchControlsProps {
   onRotate: () => void;
   onSoftDrop: () => void;
   onHardDrop: () => void;
+  onRewind?: () => void;
+  onBomb?: () => void;
+  canRewind?: boolean;
+  rewindCharges?: number;
+  canBomb?: boolean;
+  bombUsed?: boolean;
+  bombProgress?: { current: number; target: number };
   disabled?: boolean;
 }
 
@@ -18,6 +25,13 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
   onRotate,
   onSoftDrop,
   onHardDrop,
+  onRewind,
+  onBomb,
+  canRewind = false,
+  rewindCharges = 1,
+  canBomb = false,
+  bombUsed = false,
+  bombProgress = { current: 0, target: 15 },
   disabled = false,
 }) => {
   // Synthesized tactile arcade micro-click sound
@@ -56,7 +70,72 @@ export const TouchControls: React.FC<TouchControlsProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto pt-1 pb-2 px-2 select-none touch-manipulation">
+    <div className="w-full max-w-md mx-auto pt-1 pb-2 px-2 select-none touch-manipulation flex flex-col gap-2">
+      {/* POWER-UP BONUS BAR (Arcade HUD Shrines) */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* BONUS 1: RETOUR / REWIND */}
+        <button
+          type="button"
+          disabled={disabled || !canRewind}
+          onClick={() => {
+            if (onRewind) handleAction(onRewind, 30, 420);
+          }}
+          className={`flex items-center justify-between px-3 py-1.5 rounded-xl border transition-all duration-100 ${
+            canRewind
+              ? 'bg-gradient-to-r from-morocco-card to-morocco-night border-morocco-gold text-morocco-gold shadow-[0_3px_0_#5a4600] active:translate-y-1 active:shadow-none shadow-[0_0_12px_rgba(212,175,55,0.4)]'
+              : 'bg-morocco-night/60 border-morocco-border/40 text-gray-500 opacity-60 cursor-not-allowed'
+          }`}
+          aria-label="Annuler le coup (Retour)"
+        >
+          <div className="flex items-center gap-1.5">
+            <Undo2 className={`w-4 h-4 ${canRewind ? 'text-morocco-gold animate-pulse' : 'text-gray-500'}`} />
+            <span className="text-[10px] font-mono font-bold tracking-wider uppercase">RETOUR [Z]</span>
+          </div>
+          <span
+            className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ${
+              canRewind ? 'bg-morocco-gold/20 text-morocco-gold border border-morocco-gold/50' : 'bg-gray-800 text-gray-500'
+            }`}
+          >
+            {rewindCharges > 0 ? `${rewindCharges} DISPO` : '0/1'}
+          </span>
+        </button>
+
+        {/* BONUS 2: EXPLOSION GALACTIQUE / BOMBE */}
+        <button
+          type="button"
+          disabled={disabled || !canBomb}
+          onClick={() => {
+            if (onBomb) handleAction(onBomb, 50, 220);
+          }}
+          className={`flex items-center justify-between px-3 py-1.5 rounded-xl border transition-all duration-100 ${
+            canBomb
+              ? 'bg-gradient-to-r from-morocco-red-dark/90 to-morocco-card border-red-500 text-white shadow-[0_3px_0_#490003] active:translate-y-1 active:shadow-none animate-pulse shadow-[0_0_16px_rgba(255,59,48,0.5)]'
+              : bombUsed
+              ? 'bg-morocco-night/40 border-morocco-border/30 text-gray-600 opacity-50 cursor-not-allowed'
+              : 'bg-morocco-night/60 border-morocco-border/40 text-gray-400'
+          }`}
+          aria-label="Explosion Galactique (Bombe)"
+        >
+          <div className="flex items-center gap-1.5">
+            <Bomb className={`w-4 h-4 ${canBomb ? 'text-red-400 animate-bounce' : 'text-gray-500'}`} />
+            <span className="text-[10px] font-mono font-bold tracking-wider uppercase">
+              {canBomb ? '💥 BOMBE [B]' : bombUsed ? 'BOMBE' : 'BOMBE [B]'}
+            </span>
+          </div>
+          <span
+            className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full ${
+              canBomb
+                ? 'bg-red-500/20 text-red-300 border border-red-500/60'
+                : bombUsed
+                ? 'bg-gray-800 text-gray-600'
+                : 'bg-morocco-night text-cyan-400 border border-cyan-500/30'
+            }`}
+          >
+            {canBomb ? 'PRÊT !' : bombUsed ? 'VIDE' : `${bombProgress.current}/${bombProgress.target}`}
+          </span>
+        </button>
+      </div>
+
       {/* 2-Cluster Dual-Thumb Ergonomic Arcade Gamepad */}
       <div className="grid grid-cols-12 gap-2 items-center">
         {/* LEFT THUMB CLUSTER: Directional Navigation [◀], [▶], and [▼ SOFT DROP] */}

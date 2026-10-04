@@ -12,8 +12,8 @@ import { ThemeSelector } from '@/components/ui/ThemeSelector';
 import { soundManager } from '@/audio/soundManager';
 import { DICTIONARY, Language } from '@/lib/i18n';
 import { ThemeId } from '@/types/theme';
-import { Play, Trophy, Volume2, VolumeX, Globe, ArrowLeft, Gamepad2 } from 'lucide-react';
-import { Grid, ActivePiece, Position, TetrominoType } from '@/types/game';
+import { Play, Trophy, Volume2, VolumeX, Globe, ArrowLeft, Gamepad2, Undo2, Bomb } from 'lucide-react';
+import { Grid, ActivePiece, Position, TetrominoType, BonusState } from '@/types/game';
 
 export default function TetrisMarocApp() {
   const [screen, setScreen] = useState<'home' | 'game'>('home');
@@ -27,6 +27,16 @@ export default function TetrisMarocApp() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+
+  // Bonus / Power-up State
+  const [bonusState, setBonusState] = useState<BonusState>({
+    rewindCharges: 1,
+    canRewind: false,
+    bombUsed: false,
+    canTriggerBomb: false,
+    bombProgress: { current: 0, target: 15 },
+  });
+  const [isBombExploding, setIsBombExploding] = useState(false);
 
   // Anti-cheat session
   const [sessionId, setSessionId] = useState('');
@@ -62,6 +72,7 @@ export default function TetrisMarocApp() {
     setGhostPos(engineRef.current.getGhostPosition());
     setNextPiece(engineRef.current.getNextPiece());
     setStats(engineRef.current.getStats());
+    setBonusState(engineRef.current.getBonusState());
 
     if (typeof window !== 'undefined') {
       const savedHigh = localStorage.getItem('tetris_maroc_highscore');
@@ -95,6 +106,7 @@ export default function TetrisMarocApp() {
     setNextPiece(engine.getNextPiece());
     const currentStats = engine.getStats();
     setStats(currentStats);
+    setBonusState(engine.getBonusState());
 
     if (engine.isGameOver() && !isGameOver) {
       setIsGameOver(true);
@@ -216,6 +228,26 @@ export default function TetrisMarocApp() {
     syncStateFromEngine();
   };
 
+  // Bonus Power-Up Handlers
+  const handleRewind = () => {
+    if (!engineRef.current) return;
+    if (engineRef.current.rewind()) {
+      soundManager.playRewind();
+      setIsGameOver(false);
+      syncStateFromEngine();
+    }
+  };
+
+  const handleBomb = () => {
+    if (!engineRef.current || isPaused || isGameOver) return;
+    if (engineRef.current.triggerBomb()) {
+      soundManager.playBombExplosion();
+      setIsBombExploding(true);
+      setTimeout(() => setIsBombExploding(false), 900);
+      syncStateFromEngine();
+    }
+  };
+
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -223,6 +255,13 @@ export default function TetrisMarocApp() {
 
       if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
         setIsPaused((prev) => !prev);
+        return;
+      }
+
+      // Allow Rewind even during Game Over if player has a charge
+      if (e.key === 'z' || e.key === 'Z' || e.key === 'u' || e.key === 'U') {
+        e.preventDefault();
+        handleRewind();
         return;
       }
 
@@ -256,6 +295,11 @@ export default function TetrisMarocApp() {
         case ' ':
           e.preventDefault();
           handleHardDrop();
+          break;
+        case 'b':
+        case 'B':
+          e.preventDefault();
+          handleBomb();
           break;
       }
     };
@@ -442,6 +486,9 @@ export default function TetrisMarocApp() {
                 isPaused={isPaused}
                 isMuted={isMuted}
                 themeId={themeId}
+                bonusState={bonusState}
+                onRewind={handleRewind}
+                onBomb={handleBomb}
                 onSelectTheme={handleSelectTheme}
                 onTogglePause={() => setIsPaused((p) => !p)}
                 onToggleMute={toggleSound}
@@ -451,7 +498,7 @@ export default function TetrisMarocApp() {
 
             {/* 3D WebGL Canvas */}
             <div
-              className="md:col-span-3 flex-1 flex flex-col items-center justify-center relative touch-none"
+              className="md:col-span-3 flex-1 flex flex-col items-center justify-center relative touch-none overflow-hidden"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -463,6 +510,11 @@ export default function TetrisMarocApp() {
                 isPaused={isPaused}
                 themeId={themeId}
               />
+
+              {/* Galactic Bomb Shockwave Flash Overlay */}
+              {isBombExploding && (
+                <div className="absolute inset-0 z-30 pointer-events-none bg-white/70 backdrop-blur-sm animate-ping duration-700" />
+              )}
 
               {/* Mobile overlay HUD badge (Stitch Cyber-Zellij In-Game Intel) */}
               <div className="md:hidden absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none z-20">
@@ -500,6 +552,13 @@ export default function TetrisMarocApp() {
               onRotate={handleRotate}
               onSoftDrop={handleSoftDrop}
               onHardDrop={handleHardDrop}
+              onRewind={handleRewind}
+              onBomb={handleBomb}
+              canRewind={bonusState.canRewind}
+              rewindCharges={bonusState.rewindCharges}
+              canBomb={bonusState.canTriggerBomb}
+              bombUsed={bonusState.bombUsed}
+              bombProgress={bonusState.bombProgress}
               disabled={isPaused || isGameOver}
             />
           </div>
@@ -532,6 +591,8 @@ export default function TetrisMarocApp() {
           isNewHighScore={isNewHighScore}
           onRestart={startGame}
           onViewLeaderboard={() => setShowLeaderboard(true)}
+          onRewind={handleRewind}
+          canRewind={bonusState.canRewind}
           t={t}
         />
       )}

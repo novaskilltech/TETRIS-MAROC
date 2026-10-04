@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { TetrominoType, GameStats } from '@/types/game';
+import { TetrominoType, GameStats, BonusState } from '@/types/game';
 import { ThemeId } from '@/types/theme';
 import { TETROMINOES } from '@/core/tetrominoes';
-import { Volume2, VolumeX, Pause, Play, Trophy, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Pause, Play, Trophy, Sparkles, Undo2, Bomb } from 'lucide-react';
 import { Translations } from '@/lib/i18n';
 import { ThemeSelector } from '@/components/ui/ThemeSelector';
 
@@ -15,6 +15,9 @@ interface StatsPanelProps {
   isPaused: boolean;
   isMuted: boolean;
   themeId: ThemeId;
+  bonusState?: BonusState;
+  onRewind?: () => void;
+  onBomb?: () => void;
   onSelectTheme: (theme: ThemeId) => void;
   onTogglePause: () => void;
   onToggleMute: () => void;
@@ -28,6 +31,9 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
   isPaused,
   isMuted,
   themeId,
+  bonusState,
+  onRewind,
+  onBomb,
   onSelectTheme,
   onTogglePause,
   onToggleMute,
@@ -139,6 +145,64 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
             )}
           </div>
         </div>
+
+        {/* BONUS & POWER-UPS (Desktop Lateral Shrine) */}
+        {bonusState && (
+          <div className="p-2.5 rounded-xl bg-morocco-card/90 backdrop-blur-md border border-morocco-gold/30 flex flex-col gap-2 shadow-md">
+            <div className="text-[10px] font-mono font-bold text-morocco-gold uppercase tracking-wider flex items-center justify-between">
+              <span>✦ POUVOIRS ARCADE ✦</span>
+              <span className="text-[9px] text-gray-400">TOUCHES [Z] [B]</span>
+            </div>
+
+            {/* Bonus 1: Rewind */}
+            <button
+              type="button"
+              disabled={!bonusState.canRewind}
+              onClick={onRewind}
+              className={`w-full py-1.5 px-2 rounded-lg border text-xs font-mono font-bold flex items-center justify-between transition-all ${
+                bonusState.canRewind
+                  ? 'bg-morocco-night border-morocco-gold text-morocco-gold shadow-[0_2px_0_#5a4600] active:translate-y-0.5 hover:bg-morocco-gold/10'
+                  : 'bg-morocco-night/50 border-morocco-border/30 text-gray-500 cursor-not-allowed opacity-60'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <Undo2 className={`w-3.5 h-3.5 ${bonusState.canRewind ? 'text-morocco-gold' : 'text-gray-500'}`} />
+                <span>RETOUR</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded ${bonusState.canRewind ? 'bg-morocco-gold/20 text-morocco-gold' : 'bg-gray-800 text-gray-500'}`}>
+                {bonusState.rewindCharges > 0 ? `${bonusState.rewindCharges} DISPO` : '0/1'}
+              </span>
+            </button>
+
+            {/* Bonus 2: Bomb */}
+            <button
+              type="button"
+              disabled={!bonusState.canTriggerBomb}
+              onClick={onBomb}
+              className={`w-full py-1.5 px-2 rounded-lg border text-xs font-mono font-bold flex items-center justify-between transition-all ${
+                bonusState.canTriggerBomb
+                  ? 'bg-gradient-to-r from-morocco-red-dark to-morocco-night border-red-500 text-white shadow-[0_2px_0_#490003] active:translate-y-0.5 animate-pulse'
+                  : bonusState.bombUsed
+                  ? 'bg-morocco-night/30 border-morocco-border/20 text-gray-600 cursor-not-allowed opacity-50'
+                  : 'bg-morocco-night/50 border-morocco-border/30 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <Bomb className={`w-3.5 h-3.5 ${bonusState.canTriggerBomb ? 'text-red-400' : 'text-gray-500'}`} />
+                <span>{bonusState.canTriggerBomb ? 'BOMBE 💥' : 'BOMBE'}</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                bonusState.canTriggerBomb
+                  ? 'bg-red-500/20 text-red-300'
+                  : bonusState.bombUsed
+                  ? 'bg-gray-800 text-gray-600'
+                  : 'bg-gray-800 text-cyan-400'
+              }`}>
+                {bonusState.canTriggerBomb ? 'PRÊT !' : bonusState.bombUsed ? 'VIDE' : `${bonusState.bombProgress.current}/${bonusState.bombProgress.target}`}
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Theme Switcher on lateral panel */}
         <div className="p-2 rounded-xl bg-morocco-card/85 backdrop-blur-md border border-morocco-border">

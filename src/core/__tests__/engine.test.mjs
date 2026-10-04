@@ -138,3 +138,100 @@ test('TetrisEngine: Tetris (4 lines) clears 4 rows and awards 800 pts', () => {
   assert.equal(stats.score, 800, 'Tetris clear at level 1 awards 800 points');
   assert.equal(stats.tetrises, 1);
 });
+
+test('TetrisEngine Bonus: starts with 1 Rewind charge available', () => {
+  const engine = new TetrisEngine();
+  const bonus = engine.getBonusState();
+  assert.equal(bonus.rewindCharges, 1, 'Player starts with 1 Rewind charge');
+  assert.equal(bonus.canRewind, false, 'Cannot rewind before any piece has locked');
+  assert.equal(bonus.bombUsed, false, 'Bomb has not been used');
+  assert.equal(bonus.canTriggerBomb, false, 'Bomb locked at 0 lines');
+  assert.equal(bonus.bombProgress.target, 15);
+});
+
+test('TetrisEngine Bonus: Rewind restores previous grid state and decrements charge', () => {
+  const engine = new TetrisEngine();
+  // Count filled cells before drop
+  const beforeCount = engine.getGrid().flat().filter((c) => c.filled).length;
+  assert.equal(beforeCount, 0);
+
+  // Hard drop piece to lock it
+  engine.hardDrop();
+  const lockedCount = engine.getGrid().flat().filter((c) => c.filled).length;
+  assert.ok(lockedCount > 0, 'Grid must have locked blocks');
+  assert.equal(engine.canRewind(), true, 'Rewind must now be available');
+
+  // Trigger Rewind
+  const success = engine.rewind();
+  assert.equal(success, true);
+  assert.equal(engine.getBonusState().rewindCharges, 0, 'Rewind charge must be 0 after use');
+
+  // Verify grid is restored to pre-lock state
+  const restoredCount = engine.getGrid().flat().filter((c) => c.filled).length;
+  assert.equal(restoredCount, 0, 'Grid must be restored to empty state');
+  assert.equal(engine.canRewind(), false, 'Cannot rewind again with 0 charges');
+});
+
+test('TetrisEngine Bonus: Clearing 20 lines recharges +1 Rewind charge', () => {
+  const engine = new TetrisEngine();
+  // Drop piece and use the initial charge
+  engine.hardDrop();
+  engine.rewind();
+  assert.equal(engine.getBonusState().rewindCharges, 0, 'Charges should be 0');
+
+  // Simulate clearing 20 lines
+  const grid = engine.getGrid();
+  for (let r = 0; r < 20; r++) {
+    for (let c = 0; c < GRID_COLS; c++) {
+      grid[r][c] = { filled: true, type: 'I', color: '#006233', patternId: 1 };
+    }
+  }
+  engine.clearFullLines();
+
+  assert.equal(engine.getStats().lines, 20);
+  assert.equal(engine.getBonusState().rewindCharges, 1, 'Clearing 20 lines must recharge Rewind to 1');
+});
+
+test('TetrisEngine Bonus: Galactic Bomb unlocks at 15 lines, incinerates grid, awards 500 pts, and is single-use', () => {
+  const engine = new TetrisEngine();
+  assert.equal(engine.canTriggerBomb(), false, 'Bomb must be locked at start');
+  assert.equal(engine.triggerBomb(), false, 'Triggering bomb before 15 lines must fail');
+
+  // Fill and clear 15 lines in two batches
+  const grid = engine.getGrid();
+  // Batch 1: 10 lines
+  for (let r = 10; r < 20; r++) {
+    for (let c = 0; c < GRID_COLS; c++) {
+      grid[r][c] = { filled: true, type: 'O', color: '#D4AF37', patternId: 4 };
+    }
+  }
+  engine.clearFullLines();
+  assert.equal(engine.canTriggerBomb(), false, 'Still locked at 10 lines');
+
+  // Batch 2: 5 more lines
+  const freshGrid = engine.getGrid();
+  for (let r = 15; r < 20; r++) {
+    for (let c = 0; c < GRID_COLS; c++) {
+      freshGrid[r][c] = { filled: true, type: 'O', color: '#D4AF37', patternId: 4 };
+    }
+  }
+  engine.clearFullLines();
+  assert.equal(engine.getStats().lines, 15);
+  assert.equal(engine.canTriggerBomb(), true, 'Bomb must unlock at 15 lines');
+
+  // Put some garbage blocks in the grid to test incineration
+  freshGrid[18][2] = { filled: true, type: 'Z', color: '#FF3B30', patternId: 7 };
+  freshGrid[19][5] = { filled: true, type: 'S', color: '#00A859', patternId: 6 };
+
+  const initialScore = engine.getStats().score;
+  const detonation = engine.triggerBomb();
+  assert.equal(detonation, true, 'Detonation must succeed');
+
+  // Grid should be totally empty
+  const remainingFilled = engine.getGrid().flat().filter((c) => c.filled).length;
+  assert.equal(remainingFilled, 0, 'Galactic Bomb must incinerate all blocks in grid');
+  assert.equal(engine.getStats().score, initialScore + 500, 'Bomb must award +500 bonus points');
+  assert.equal(engine.getBonusState().bombUsed, true, 'Bomb must be marked as used');
+  assert.equal(engine.canTriggerBomb(), false, 'Bomb cannot be triggered a second time');
+});
+

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Trophy, RotateCcw, Send, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { Trophy, RotateCcw, Send, CheckCircle, AlertCircle, Sparkles, Undo2 } from 'lucide-react';
 import { GameStats, LeaderboardEntry } from '@/types/game';
 import { Translations } from '@/lib/i18n';
 
@@ -13,6 +13,8 @@ interface GameOverModalProps {
   isNewHighScore: boolean;
   onRestart: () => void;
   onViewLeaderboard: () => void;
+  onRewind?: () => void;
+  canRewind?: boolean;
   t: Translations;
 }
 
@@ -23,6 +25,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   isNewHighScore,
   onRestart,
   onViewLeaderboard,
+  onRewind,
+  canRewind = false,
   t,
 }) => {
   const [pseudo, setPseudo] = useState('');
@@ -126,6 +130,23 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
             <span>{t.level}: <strong className="text-white">{stats.level}</strong></span>
           </div>
         </div>
+
+        {/* SECONDE CHANCE (REWIND) OVERRIDE BUTTON */}
+        {canRewind && onRewind && (
+          <div className="mb-4 p-3 rounded-2xl bg-gradient-to-r from-amber-950/70 via-morocco-card to-amber-950/70 border-2 border-morocco-gold shadow-[0_0_20px_rgba(212,175,55,0.45)] text-center animate-pulse">
+            <p className="text-[11px] text-morocco-gold-light font-bold mb-2 font-mono uppercase tracking-wider">
+              ⏱️ BONUS DISPONIBLE : Vous pouvez annuler ce Game Over !
+            </p>
+            <button
+              type="button"
+              onClick={onRewind}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-morocco-gold to-morocco-gold-light text-morocco-night font-black text-xs uppercase tracking-wider shadow-[0_4px_0_#806200] active:translate-y-1 active:shadow-none flex items-center justify-center gap-2 font-mono transition-all hover:brightness-110"
+            >
+              <Undo2 className="w-4 h-4" />
+              <span>UTILISER SECONDE CHANCE (1 DISPO)</span>
+            </button>
+          </div>
+        )}
 
         {/* Pseudo Submission / Confirmation */}
         {!submittedEntry ? (

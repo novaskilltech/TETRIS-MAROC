@@ -6,12 +6,22 @@ import type {
   ActivePiece,
   GameStats,
   Position,
+  BonusState,
 } from '../types/game.ts';
 import { TETROMINOES, ALL_PIECE_TYPES } from './tetrominoes.ts';
 import { getWallKicks } from './wallkicks.ts';
 
 export const GRID_COLS = 10;
 export const GRID_ROWS = 20;
+
+export interface EngineSnapshot {
+  grid: Grid;
+  currentPiece: ActivePiece | null;
+  bag: TetrominoType[];
+  nextPieces: TetrominoType[];
+  stats: GameStats;
+  gameOver: boolean;
+}
 
 export function createEmptyGrid(): Grid {
   return Array.from({ length: GRID_ROWS }, () =>
@@ -30,6 +40,13 @@ export class TetrisEngine {
   private lockTimer: number | null = null;
   private moveResetsCount: number = 0;
   private maxMoveResets: number = 15;
+
+  // --- BONUS / POWER-UPS ---
+  private preLockSnapshot: EngineSnapshot | null = null;
+  private rewindCharges: number = 1; // 1 charge dispo dès le départ
+  private lastRewindRechargeMilestone: number = 0; // Palier 20 lignes
+  private bombUsed: boolean = false;
+  private readonly BOMB_REQUIRED_LINES: number = 15; // Déblocage bombe
 
   constructor() {
     this.grid = createEmptyGrid();
@@ -242,6 +259,9 @@ export class TetrisEngine {
   public lockPiece(): number {
     if (!this.currentPiece) return 0;
 
+    // Save snapshot of grid and game state BEFORE placing this piece, enabling Rewind!
+    this.preLockSnapshot = this.createSnapshot();
+
     const shape = TETROMINOES[this.currentPiece.type].shapes[this.currentPiece.rotation];
     const def = TETROMINOES[this.currentPiece.type];
 
@@ -307,6 +327,13 @@ export class TetrisEngine {
     const prevLevel = this.stats.level;
     this.stats.level = Math.floor(this.stats.lines / 10) + 1;
 
+    // Check Rewind bonus recharge: +1 charge every 20 lines destroyed (capped at 1)
+    const currentMilestone = Math.floor(this.stats.lines / 20);
+    if (currentMilestone > this.lastRewindRechargeMilestone) {
+      this.lastRewindRechargeMilestone = currentMilestone;
+      this.rewindCharges = Math.min(1, this.rewindCharges + 1);
+    }
+
     // Classic Nintendo/BPS scoring formula
     let baseScore = 0;
     if (count === 1) {
@@ -343,6 +370,74 @@ export class TetrisEngine {
     return Math.max(80, 150 - (lvl - 9) * 10);
   }
 
+  // --- SNAPSHOT & BONUS METHODS ---
+  private createSnapshot(): EngineSnapshot {
+    return {
+      grid: this.grid.map((row) => row.map((cell) => ({ ...cell }))),
+      currentPiece: this.currentPiece ? { ...this.currentPiece } : null,
+      bag: [...this.bag],
+      nextPieces: [...this.nextPieces],
+      stats: { ...this.stats },
+      gameOver: this.gameOver,
+    };
+  }
+
+  public canRewind(): boolean {
+    return this.rewindCharges > 0 && this.preLockSnapshot !== null;
+  }
+
+  public rewind(): boolean {
+    if (!this.canRewind() || !this.preLockSnapshot) return false;
+
+    // Restore previous state
+    this.grid = this.preLockSnapshot.grid.map((row) => row.map((cell) => ({ ...cell })));
+    this.currentPiece = this.preLockSnapshot.currentPiece
+      ? { ...this.preLockSnapshot.currentPiece }
+      : null;
+    this.bag = [...this.preLockSnapshot.bag];
+    this.nextPieces = [...this.preLockSnapshot.nextPieces];
+    this.stats = { ...this.preLockSnapshot.stats };
+    this.gameOver = false;
+    this.rewindCharges = Math.max(0, this.rewindCharges - 1);
+    this.preLockSnapshot = null;
+
+    if (!this.currentPiece) {
+      this.spawnNextPiece();
+    }
+
+    return true;
+  }
+
+  public canTriggerBomb(): boolean {
+    return !this.gameOver && !this.bombUsed && this.stats.lines >= this.BOMB_REQUIRED_LINES;
+  }
+
+  public triggerBomb(): boolean {
+    if (!this.canTriggerBomb()) return false;
+
+    // Erase all blocks in the matrix well
+    this.grid = createEmptyGrid();
+    this.bombUsed = true;
+    this.stats.score += 500; // Bonus explosion galactique
+
+    // Respawn a fresh piece on top of the clean matrix
+    this.spawnNextPiece();
+    return true;
+  }
+
+  public getBonusState(): BonusState {
+    return {
+      rewindCharges: this.rewindCharges,
+      canRewind: this.canRewind(),
+      bombUsed: this.bombUsed,
+      canTriggerBomb: this.canTriggerBomb(),
+      bombProgress: {
+        current: Math.min(this.BOMB_REQUIRED_LINES, this.stats.lines),
+        target: this.BOMB_REQUIRED_LINES,
+      },
+    };
+  }
+
   // --- GETTERS & RESET ---
   public getGrid(): Grid {
     return this.grid;
@@ -374,6 +469,10 @@ export class TetrisEngine {
     this.gameOver = false;
     this.bag = [];
     this.nextPieces = [];
+    this.preLockSnapshot = null;
+    this.rewindCharges = 1;
+    this.lastRewindRechargeMilestone = 0;
+    this.bombUsed = false;
     this.refillBagIfNeeded();
     this.spawnNextPiece();
   }
